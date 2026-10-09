@@ -1,0 +1,5 @@
+{
+  // The project uses Prisma 6 (see package.json). Without this, the Prisma extension
+  // validates schema.prisma with Prisma 7 rules and flags the datasource `url` as an error.
+  "prisma.pinToPrisma6": true
+}

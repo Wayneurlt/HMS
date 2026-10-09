@@ -1,0 +1,189 @@
+@import "tailwindcss";
+
+/* Design tokens — dark operational theme modelled on the reference dashboard. */
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --color-page: #050506;
+  --color-card: #141418;
+  --color-card-2: #1d1d24;
+  --color-card-3: #26262f;
+  --color-line: #24242c;
+  --color-line-2: #32323d;
+
+  --color-ink: #f3f3f6;
+  --color-ink-2: #a3a3b0;
+  --color-ink-3: #6e6e7b;
+
+  --color-accent: #8b7cf6;
+  --color-accent-hi: #a497fa;
+  --color-accent-lo: #8b7cf622;
+
+  /* Validated categorical chart order (dark surface): purple, teal, amber, pink */
+  --color-series-1: #8b7cf6;
+  --color-series-2: #2fa898;
+  --color-series-3: #c07c2a;
+  --color-series-4: #c85fbb;
+
+  /* Status (reserved — never used as series colours) */
+  --color-good: #4ade80;
+  --color-good-lo: #4ade801f;
+  --color-warn: #f5b84a;
+  --color-warn-lo: #f5b84a1f;
+  --color-bad: #f87171;
+  --color-bad-lo: #f871711f;
+  --color-info: #60a5fa;
+  --color-info-lo: #60a5fa1f;
+
+  --radius-card: 1.25rem;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+/*
+ * Light theme. Every utility reads these variables, so overriding them re-themes the app.
+ * Applies when the user picked light (data-theme="light"), or when they haven't picked
+ * and the OS prefers light. The chart series colours are validated for both surfaces.
+ */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-page: #f3f3f7;
+  --color-card: #ffffff;
+  --color-card-2: #f2f2f7;
+  --color-card-3: #e6e6ee;
+  --color-line: #e4e4ec;
+  --color-line-2: #d2d2de;
+  --color-ink: #15151c;
+  --color-ink-2: #545468;
+  --color-ink-3: #85859a;
+  --color-accent: #7564f0;
+  --color-accent-hi: #5d4bdb;
+  --color-accent-lo: #7564f01f;
+  --color-good: #15803d;
+  --color-good-lo: #16a34a1a;
+  --color-warn: #a16207;
+  --color-warn-lo: #eab3081f;
+  --color-bad: #dc2626;
+  --color-bad-lo: #dc26261a;
+  --color-info: #2563eb;
+  --color-info-lo: #2563eb1a;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --color-page: #f3f3f7;
+    --color-card: #ffffff;
+    --color-card-2: #f2f2f7;
+    --color-card-3: #e6e6ee;
+    --color-line: #e4e4ec;
+    --color-line-2: #d2d2de;
+    --color-ink: #15151c;
+    --color-ink-2: #545468;
+    --color-ink-3: #85859a;
+    --color-accent: #7564f0;
+    --color-accent-hi: #5d4bdb;
+    --color-accent-lo: #7564f01f;
+    --color-good: #15803d;
+    --color-good-lo: #16a34a1a;
+    --color-warn: #a16207;
+    --color-warn-lo: #eab3081f;
+    --color-bad: #dc2626;
+    --color-bad-lo: #dc26261a;
+    --color-info: #2563eb;
+    --color-info-lo: #2563eb1a;
+  }
+}
+
+/* Light cards get a soft shadow instead of relying on the border alone. */
+:root[data-theme="light"] .rounded-card.bg-card {
+  box-shadow: 0 1px 2px rgb(20 20 40 / 0.04), 0 4px 16px rgb(20 20 40 / 0.04);
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .rounded-card.bg-card {
+    box-shadow: 0 1px 2px rgb(20 20 40 / 0.04), 0 4px 16px rgb(20 20 40 / 0.04);
+  }
+}
+
+/* "Card art" panels (occupancy card, landing hero) stay dark in both themes, like a bank card. */
+.card-art {
+  --color-ink: #f3f3f6;
+  --color-ink-2: #c4c4d0;
+  --color-ink-3: #9a9aab;
+  --color-line-2: #3a3a48;
+  --color-card: #141418;
+  --color-card-2: #1d1d24;
+  --color-card-3: #26262f;
+  --color-accent-hi: #a497fa;
+  color: var(--color-ink);
+  background-image: linear-gradient(to bottom right, #2a2838, #1c1b26, #121218);
+}
+
+html,
+body {
+  background: var(--color-page);
+  color: var(--color-ink);
+}
+
+body {
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Grid/flex children may shrink below their content width so wide tables scroll inside
+   their card instead of stretching the page on phones. */
+.grid > *,
+.flex > main {
+  min-width: 0;
+}
+
+/* Thin, quiet scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-2) transparent;
+}
+
+/* Native date / select controls in dark mode */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8);
+  cursor: pointer;
+}
+:root[data-theme="light"] input::-webkit-calendar-picker-indicator {
+  filter: none;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) input::-webkit-calendar-picker-indicator {
+    filter: none;
+  }
+}
+
+dialog::backdrop {
+  background: rgb(0 0 0 / 0.65);
+  backdrop-filter: blur(2px);
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media print {
+  html,
+  body {
+    background: #fff;
+    color: #000;
+  }
+  .no-print {
+    display: none !important;
+  }
+}

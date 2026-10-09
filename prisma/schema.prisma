@@ -1,0 +1,677 @@
+// Hostel Management System — single hostel, not multi-tenant.
+// Conventions:
+//  * Money is Decimal(12,2) (KES). Quantities are Decimal(12,3).
+//  * Calendar days (rent month, due dates, overnight nights, meal days) use @db.Date
+//    and are interpreted in the hostel timezone (HostelSettings.timezone).
+//  * Financial / historical records are never hard-deleted: they carry voidedAt/deletedAt.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────────────────────── Enums ─────────────────────────────
+
+enum Role {
+  OWNER
+  HOSTEL_MANAGER
+  KITCHEN_STAFF
+  STUDENT
+}
+
+enum StudentStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  CHECKED_OUT
+}
+
+enum BedStatus {
+  AVAILABLE
+  OCCUPIED
+  RESERVED
+  MAINTENANCE
+}
+
+enum RentStatus {
+  PENDING
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+}
+
+enum PaymentMethod {
+  MPESA
+  CASH
+  BANK
+  OTHER
+}
+
+enum ReminderType {
+  BEFORE_DUE
+  ON_DUE
+  OVERDUE
+}
+
+enum ReminderChannel {
+  IN_APP
+  SMS
+  WHATSAPP
+  EMAIL
+}
+
+enum ReminderStatus {
+  PENDING
+  SENT
+  FAILED
+  SKIPPED
+}
+
+enum OvernightState {
+  STAYING
+  AWAY
+}
+
+enum MealType {
+  BREAKFAST
+  DINNER
+}
+
+enum InventoryCategory {
+  GRAINS
+  PROTEIN
+  DAIRY
+  VEGETABLES
+  FRUITS
+  BEVERAGES
+  CONDIMENTS
+  COOKING_FUEL
+  CLEANING
+  OTHER
+}
+
+enum InventoryTransactionType {
+  OPENING
+  PURCHASE
+  CONSUMPTION
+  ADJUSTMENT
+  WASTE
+}
+
+enum Priority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum ShoppingRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PURCHASED
+  CANCELLED
+}
+
+enum ExpenseCategory {
+  FOOD
+  GAS
+  WATER
+  CLEANING_SUPPLIES
+  EQUIPMENT
+  TRANSPORT
+  OTHER
+}
+
+enum AnnouncementAudience {
+  ALL
+  STUDENTS
+  STAFF
+}
+
+enum NotificationType {
+  RENT_DUE_SOON
+  RENT_DUE_TODAY
+  RENT_OVERDUE
+  PAYMENT_RECEIVED
+  LOW_STOCK
+  OUT_OF_STOCK
+  SHOPPING_REQUEST_NEW
+  SHOPPING_REQUEST_APPROVED
+  SHOPPING_REQUEST_REJECTED
+  ANNOUNCEMENT
+  GENERAL
+}
+
+// ───────────────────────────── Auth ─────────────────────────────
+
+model User {
+  id                 String    @id @default(cuid())
+  name               String
+  email              String?   @unique
+  phone              String?   @unique
+  passwordHash       String
+  role               Role
+  isActive           Boolean   @default(true)
+  mustChangePassword Boolean   @default(false)
+  lastLoginAt        DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  student  Student?
+  sessions Session[]
+
+  notifications         Notification[]
+  activityLogs          ActivityLog[]
+  checkIns              Accommodation[]        @relation("CheckedInBy")
+  checkOuts             Accommodation[]        @relation("CheckedOutBy")
+  paymentsRecorded      RentPayment[]          @relation("PaymentRecordedBy")
+  paymentsVoided        RentPayment[]          @relation("PaymentVoidedBy")
+  overnightUpdates      OvernightStatus[]
+  mealsCreated          Meal[]
+  mealRecords           MealRecord[]
+  inventoryTransactions InventoryTransaction[]
+  purchases             Purchase[]
+  shoppingRequests      ShoppingRequest[]      @relation("RequestedBy")
+  shoppingReviews       ShoppingRequest[]      @relation("ReviewedBy")
+  expensesRecorded      KitchenExpense[]       @relation("ExpenseRecordedBy")
+  expensesVoided        KitchenExpense[]       @relation("ExpenseVoidedBy")
+  announcements         Announcement[]
+
+  @@index([role, isActive])
+}
+
+model Session {
+  id         String   @id @default(cuid())
+  tokenHash  String   @unique
+  userId     String
+  expiresAt  DateTime
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  lastSeenAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model LoginAttempt {
+  id         String   @id @default(cuid())
+  identifier String
+  ipAddress  String?
+  success    Boolean
+  createdAt  DateTime @default(now())
+
+  @@index([identifier, createdAt])
+  @@index([ipAddress, createdAt])
+}
+
+// ───────────────────────────── Rooms & residents ─────────────────────────────
+
+model Room {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  floor       String?
+  description String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  beds Bed[]
+}
+
+model Bed {
+  id        String    @id @default(cuid())
+  roomId    String
+  label     String
+  status    BedStatus @default(AVAILABLE)
+  notes     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  room                Room            @relation(fields: [roomId], references: [id], onDelete: Restrict)
+  accommodations      Accommodation[] @relation("AccommodationBed")
+  activeAccommodation Accommodation?  @relation("ActiveBed")
+
+  @@unique([roomId, label])
+  @@index([status])
+}
+
+model Student {
+  id                    String        @id @default(cuid())
+  userId                String?       @unique
+  fullName              String
+  phone                 String
+  email                 String?
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  idNumber              String?
+  photoUrl              String?
+  status                StudentStatus @default(PENDING)
+  monthlyRent           Decimal       @db.Decimal(12, 2)
+  rentDueDay            Int           @default(5)
+  moveInDate            DateTime?     @db.Date
+  moveOutDate           DateTime?     @db.Date
+  notes                 String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  deletedAt             DateTime?
+
+  user                User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  accommodations      Accommodation[]   @relation("AccommodationStudent")
+  activeAccommodation Accommodation?    @relation("ActiveStudent")
+  rentInvoices        RentInvoice[]
+  rentPayments        RentPayment[]
+  overnightStatuses   OvernightStatus[]
+  mealAttendances     MealAttendance[]
+  reminders           ReminderLog[]
+
+  @@index([status])
+  @@index([fullName])
+}
+
+/// A student's stay in a specific bed. Exactly one active stay per bed and per student
+/// is enforced by the nullable unique columns activeBedId / activeStudentId
+/// (set while active, NULL once the stay ends — Postgres allows many NULLs).
+model Accommodation {
+  id              String    @id @default(cuid())
+  studentId       String
+  bedId           String
+  activeStudentId String?   @unique
+  activeBedId     String?   @unique
+  startDate       DateTime  @db.Date
+  endDate         DateTime? @db.Date
+  monthlyRent     Decimal   @db.Decimal(12, 2)
+  isActive        Boolean   @default(true)
+  checkedInById   String?
+  checkedOutById  String?
+  checkoutNotes   String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  student       Student       @relation("AccommodationStudent", fields: [studentId], references: [id], onDelete: Restrict)
+  bed           Bed           @relation("AccommodationBed", fields: [bedId], references: [id], onDelete: Restrict)
+  activeStudent Student?      @relation("ActiveStudent", fields: [activeStudentId], references: [id], onDelete: Restrict)
+  activeBed     Bed?          @relation("ActiveBed", fields: [activeBedId], references: [id], onDelete: Restrict)
+  checkedInBy   User?         @relation("CheckedInBy", fields: [checkedInById], references: [id], onDelete: SetNull)
+  checkedOutBy  User?         @relation("CheckedOutBy", fields: [checkedOutById], references: [id], onDelete: SetNull)
+  rentInvoices  RentInvoice[]
+
+  @@index([studentId])
+  @@index([bedId])
+  @@index([isActive])
+}
+
+// ───────────────────────────── Rent ─────────────────────────────
+
+/// One rent obligation per student per month. amountPaid is maintained transactionally
+/// from non-voided RentPayments. status is refreshed on every write and by syncRentStatuses().
+model RentInvoice {
+  id              String     @id @default(cuid())
+  studentId       String
+  accommodationId String?
+  periodMonth     DateTime   @db.Date
+  amountDue       Decimal    @db.Decimal(12, 2)
+  amountPaid      Decimal    @default(0) @db.Decimal(12, 2)
+  dueDate         DateTime   @db.Date
+  status          RentStatus @default(PENDING)
+  notes           String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  voidedAt        DateTime?
+  voidReason      String?
+
+  student       Student        @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  accommodation Accommodation? @relation(fields: [accommodationId], references: [id], onDelete: SetNull)
+  payments      RentPayment[]
+  reminders     ReminderLog[]
+
+  @@unique([studentId, periodMonth])
+  @@index([status])
+  @@index([dueDate])
+  @@index([periodMonth])
+}
+
+model RentPayment {
+  id           String        @id @default(cuid())
+  invoiceId    String
+  studentId    String
+  amount       Decimal       @db.Decimal(12, 2)
+  paidAt       DateTime      @db.Date
+  method       PaymentMethod
+  reference    String?
+  notes        String?
+  recordedById String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  voidedAt     DateTime?
+  voidedById   String?
+  voidReason   String?
+
+  invoice    RentInvoice @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+  student    Student     @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  recordedBy User?       @relation("PaymentRecordedBy", fields: [recordedById], references: [id], onDelete: SetNull)
+  voidedBy   User?       @relation("PaymentVoidedBy", fields: [voidedById], references: [id], onDelete: SetNull)
+
+  @@index([invoiceId])
+  @@index([studentId])
+  @@index([paidAt])
+}
+
+/// Configurable reminder schedule. offsetDays < 0 = before due date, 0 = on due date, > 0 = overdue.
+model ReminderRule {
+  id         String          @id @default(cuid())
+  name       String
+  offsetDays Int             @unique
+  channel    ReminderChannel @default(IN_APP)
+  template   String
+  isActive   Boolean         @default(true)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  logs ReminderLog[]
+}
+
+model ReminderLog {
+  id           String          @id @default(cuid())
+  invoiceId    String
+  studentId    String
+  ruleId       String?
+  type         ReminderType
+  channel      ReminderChannel
+  recipient    String
+  message      String
+  status       ReminderStatus  @default(PENDING)
+  provider     String?
+  error        String?
+  scheduledFor DateTime        @db.Date
+  sentAt       DateTime?
+  createdAt    DateTime        @default(now())
+
+  invoice RentInvoice   @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+  student Student       @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  rule    ReminderRule? @relation(fields: [ruleId], references: [id], onDelete: SetNull)
+
+  @@unique([invoiceId, ruleId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ───────────────────────────── Overnight & meals ─────────────────────────────
+
+/// A student's answer for one night. No row = "Not responded".
+model OvernightStatus {
+  id                 String         @id @default(cuid())
+  studentId          String
+  date               DateTime       @db.Date
+  status             OvernightState
+  expectedReturnDate DateTime?      @db.Date
+  note               String?
+  updatedById        String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  updatedBy User?   @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@unique([studentId, date])
+  @@index([date, status])
+}
+
+model Meal {
+  id          String   @id @default(cuid())
+  date        DateTime @db.Date
+  type        MealType
+  menu        String
+  notes       String?
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy   User?            @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  record      MealRecord?
+  attendances MealAttendance[]
+
+  @@unique([date, type])
+  @@index([date])
+}
+
+/// Kitchen's final numbers for a meal.
+model MealRecord {
+  id               String   @id @default(cuid())
+  mealId           String   @unique
+  expectedCount    Int
+  servedCount      Int
+  leftoverPortions Decimal  @default(0) @db.Decimal(8, 2)
+  notes            String?
+  recordedById     String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  meal       Meal  @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  recordedBy User? @relation(fields: [recordedById], references: [id], onDelete: SetNull)
+}
+
+/// Optional per-student attendance tick for a meal.
+model MealAttendance {
+  id        String   @id @default(cuid())
+  mealId    String
+  studentId String
+  attended  Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  meal    Meal    @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([mealId, studentId])
+}
+
+// ───────────────────────────── Kitchen ─────────────────────────────
+
+model InventoryItem {
+  id              String            @id @default(cuid())
+  name            String            @unique
+  category        InventoryCategory @default(OTHER)
+  unit            String
+  currentQuantity Decimal           @default(0) @db.Decimal(12, 3)
+  minQuantity     Decimal           @default(0) @db.Decimal(12, 3)
+  maxQuantity     Decimal?          @db.Decimal(12, 3)
+  supplier        String?
+  notes           String?
+  isActive        Boolean           @default(true)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  deletedAt       DateTime?
+
+  transactions         InventoryTransaction[]
+  purchases            Purchase[]
+  shoppingRequestItems ShoppingRequestItem[]
+
+  @@index([category])
+}
+
+/// Stock movement ledger. quantityChange is signed; balanceAfter is the item quantity after the movement.
+model InventoryTransaction {
+  id             String                   @id @default(cuid())
+  itemId         String
+  type           InventoryTransactionType
+  quantityChange Decimal                  @db.Decimal(12, 3)
+  balanceAfter   Decimal                  @db.Decimal(12, 3)
+  reason         String?
+  purchaseId     String?
+  createdById    String?
+  createdAt      DateTime                 @default(now())
+
+  item      InventoryItem @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  purchase  Purchase?     @relation(fields: [purchaseId], references: [id], onDelete: SetNull)
+  createdBy User?         @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([itemId, createdAt])
+  @@index([type, createdAt])
+}
+
+model Purchase {
+  id                String    @id @default(cuid())
+  itemId            String
+  quantity          Decimal   @db.Decimal(12, 3)
+  unit              String
+  unitCost          Decimal   @db.Decimal(12, 2)
+  totalCost         Decimal   @db.Decimal(12, 2)
+  supplier          String?
+  purchaseDate      DateTime  @db.Date
+  reference         String?
+  notes             String?
+  shoppingRequestId String?
+  recordedById      String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  voidedAt          DateTime?
+  voidReason        String?
+
+  item            InventoryItem          @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  shoppingRequest ShoppingRequest?       @relation(fields: [shoppingRequestId], references: [id], onDelete: SetNull)
+  recordedBy      User?                  @relation(fields: [recordedById], references: [id], onDelete: SetNull)
+  transactions    InventoryTransaction[]
+
+  @@index([purchaseDate])
+  @@index([itemId])
+}
+
+model ShoppingRequest {
+  id            String                @id @default(cuid())
+  reason        String?
+  priority      Priority              @default(NORMAL)
+  status        ShoppingRequestStatus @default(PENDING)
+  neededBy      DateTime?             @db.Date
+  requestedById String?
+  reviewedById  String?
+  reviewedAt    DateTime?
+  reviewNote    String?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  requestedBy User?                 @relation("RequestedBy", fields: [requestedById], references: [id], onDelete: SetNull)
+  reviewedBy  User?                 @relation("ReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+  items       ShoppingRequestItem[]
+  purchases   Purchase[]
+
+  @@index([status, createdAt])
+}
+
+model ShoppingRequestItem {
+  id              String   @id @default(cuid())
+  requestId       String
+  inventoryItemId String?
+  name            String
+  quantity        Decimal  @db.Decimal(12, 3)
+  unit            String
+  estimatedCost   Decimal? @db.Decimal(12, 2)
+  notes           String?
+
+  request       ShoppingRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  inventoryItem InventoryItem?  @relation(fields: [inventoryItemId], references: [id], onDelete: SetNull)
+
+  @@index([requestId])
+}
+
+model KitchenExpense {
+  id            String          @id @default(cuid())
+  category      ExpenseCategory
+  description   String
+  amount        Decimal         @db.Decimal(12, 2)
+  expenseDate   DateTime        @db.Date
+  paymentMethod PaymentMethod
+  reference     String?
+  notes         String?
+  recordedById  String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  voidedAt      DateTime?
+  voidedById    String?
+  voidReason    String?
+
+  recordedBy User? @relation("ExpenseRecordedBy", fields: [recordedById], references: [id], onDelete: SetNull)
+  voidedBy   User? @relation("ExpenseVoidedBy", fields: [voidedById], references: [id], onDelete: SetNull)
+
+  @@index([expenseDate])
+  @@index([category])
+}
+
+// ───────────────────────────── Communication & audit ─────────────────────────────
+
+model Announcement {
+  id          String               @id @default(cuid())
+  title       String
+  message     String
+  priority    Priority             @default(NORMAL)
+  audience    AnnouncementAudience @default(ALL)
+  publishAt   DateTime             @default(now())
+  expiresAt   DateTime?
+  createdById String?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  deletedAt   DateTime?
+
+  createdBy User? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([publishAt, expiresAt])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  link      String?
+  /// Prevents duplicate alerts (e.g. one LOW_STOCK alert per item per day).
+  dedupeKey String?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, readAt, createdAt])
+}
+
+model ActivityLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String
+  entityType String
+  entityId   String?
+  details    Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([entityType, entityId])
+  @@index([userId, createdAt])
+}
+
+/// Singleton row (id = 1).
+model HostelSettings {
+  id                 Int      @id @default(1)
+  hostelName         String   @default("Student Hostel")
+  address            String?
+  phone              String?
+  email              String?
+  defaultMonthlyRent Decimal  @default(10000) @db.Decimal(12, 2)
+  defaultRentDueDay  Int      @default(5)
+  prorateFirstMonth  Boolean  @default(false)
+  breakfastTime      String   @default("07:00")
+  dinnerTime         String   @default("19:00")
+  updatedAt          DateTime @updatedAt
+}
