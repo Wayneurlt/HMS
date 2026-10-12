@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Design tokens — dark operational theme modelled on the reference dashboard. */
+/* Design tokens — Masqani brand (sky blue + white) on a dark operational theme, with a light theme below. */
 @theme {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
@@ -15,9 +15,13 @@
   --color-ink-2: #a3a3b0;
   --color-ink-3: #6e6e7b;
 
-  --color-accent: #8b7cf6;
-  --color-accent-hi: #a497fa;
-  --color-accent-lo: #8b7cf622;
+  /* Masqani brand: sky blue #9AD9EA + white. Text on an accent fill uses accent-ink. */
+  --color-accent: #9ad9ea;
+  --color-accent-hi: #c2ebf5;
+  --color-accent-lo: #9ad9ea24;
+  --color-accent-hover: #b5e4f0;
+  --color-accent-ink: #0b3440;
+  --color-logo: #9ad9ea;
 
   /* Validated categorical chart order (dark surface): purple, teal, amber, pink */
   --color-series-1: #8b7cf6;
@@ -49,18 +53,21 @@
  */
 :root[data-theme="light"] {
   color-scheme: light;
-  --color-page: #f3f3f7;
+  --color-page: #f5fafc;
   --color-card: #ffffff;
-  --color-card-2: #f2f2f7;
-  --color-card-3: #e6e6ee;
-  --color-line: #e4e4ec;
-  --color-line-2: #d2d2de;
-  --color-ink: #15151c;
-  --color-ink-2: #545468;
-  --color-ink-3: #85859a;
-  --color-accent: #7564f0;
-  --color-accent-hi: #5d4bdb;
-  --color-accent-lo: #7564f01f;
+  --color-card-2: #eef6f9;
+  --color-card-3: #e1eef3;
+  --color-line: #e3eef2;
+  --color-line-2: #cfe0e7;
+  --color-ink: #0f1f26;
+  --color-ink-2: #4b5f68;
+  --color-ink-3: #7f939b;
+  /* The brand sky blue is too light for text on white, so accent-hi (links, tinted labels) is a deeper shade. */
+  --color-accent: #9ad9ea;
+  --color-accent-hi: #1d7a93;
+  --color-accent-lo: #9ad9ea33;
+  --color-accent-hover: #82cfe3;
+  --color-logo: #1d7a93;
   --color-good: #15803d;
   --color-good-lo: #16a34a1a;
   --color-warn: #a16207;
@@ -74,18 +81,21 @@
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
     color-scheme: light;
-    --color-page: #f3f3f7;
+    --color-page: #f5fafc;
     --color-card: #ffffff;
-    --color-card-2: #f2f2f7;
-    --color-card-3: #e6e6ee;
-    --color-line: #e4e4ec;
-    --color-line-2: #d2d2de;
-    --color-ink: #15151c;
-    --color-ink-2: #545468;
-    --color-ink-3: #85859a;
-    --color-accent: #7564f0;
-    --color-accent-hi: #5d4bdb;
-    --color-accent-lo: #7564f01f;
+    --color-card-2: #eef6f9;
+    --color-card-3: #e1eef3;
+    --color-line: #e3eef2;
+    --color-line-2: #cfe0e7;
+    --color-ink: #0f1f26;
+    --color-ink-2: #4b5f68;
+    --color-ink-3: #7f939b;
+    /* The brand sky blue is too light for text on white, so accent-hi (links, tinted labels) is a deeper shade. */
+    --color-accent: #9ad9ea;
+    --color-accent-hi: #1d7a93;
+    --color-accent-lo: #9ad9ea33;
+    --color-accent-hover: #82cfe3;
+    --color-logo: #1d7a93;
     --color-good: #15803d;
     --color-good-lo: #16a34a1a;
     --color-warn: #a16207;
@@ -99,11 +109,11 @@
 
 /* Light cards get a soft shadow instead of relying on the border alone. */
 :root[data-theme="light"] .rounded-card.bg-card {
-  box-shadow: 0 1px 2px rgb(20 20 40 / 0.04), 0 4px 16px rgb(20 20 40 / 0.04);
+  box-shadow: 0 1px 2px rgb(15 50 65 / 0.04), 0 4px 16px rgb(15 50 65 / 0.04);
 }
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) .rounded-card.bg-card {
-    box-shadow: 0 1px 2px rgb(20 20 40 / 0.04), 0 4px 16px rgb(20 20 40 / 0.04);
+    box-shadow: 0 1px 2px rgb(15 50 65 / 0.04), 0 4px 16px rgb(15 50 65 / 0.04);
   }
 }
 
@@ -112,13 +122,14 @@
   --color-ink: #f3f3f6;
   --color-ink-2: #c4c4d0;
   --color-ink-3: #9a9aab;
-  --color-line-2: #3a3a48;
-  --color-card: #141418;
-  --color-card-2: #1d1d24;
-  --color-card-3: #26262f;
-  --color-accent-hi: #a497fa;
+  --color-line-2: #34505a;
+  --color-card: #13222a;
+  --color-card-2: #1a2d36;
+  --color-card-3: #233a44;
+  --color-accent-hi: #c2ebf5;
+  --color-logo: #9ad9ea;
   color: var(--color-ink);
-  background-image: linear-gradient(to bottom right, #2a2838, #1c1b26, #121218);
+  background-image: linear-gradient(to bottom right, #1d3540, #14232a, #0d161a);
 }
 
 html,
@@ -176,6 +187,241 @@ dialog::backdrop {
     display: none;
   }
 }
+
+/* ─────────────── Mobile navigation ─────────────── */
+
+/* Toasts sit above the bottom tab bar on pages that have one. */
+@media (max-width: 1023px) {
+  :root:has(.bottom-tabs) .toast-stack {
+    bottom: 4.5rem;
+  }
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.animate-sheet {
+  animation: sheet-up 0.24s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.animate-fade {
+  animation: fade-in 0.2s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-sheet,
+  .animate-fade {
+    animation: none;
+  }
+}
+
+/* ─────────────── Mobile robustness ─────────────── */
+
+/* Touch screens: 16px form text stops iOS from zooming into a field when it's tapped. */
+@media (pointer: coarse), (max-width: 640px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+@media (pointer: coarse) {
+  /* Icon-only buttons get at least a 40px tap area, even where they're drawn smaller. */
+  .tap-icon {
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+  }
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  /* Plain text links (names, "View…", references): taller tap area. Vertical padding on an
+     inline element enlarges what can be tapped without moving the surrounding layout. */
+  main a:not([class*="flex"]):not([class*="block"]):not([class*="grid"]):not([class*="h-"]):not([class*="py-"]) {
+    padding-block: 0.625rem;
+  }
+  /* Block links (names in lists and cards): pad and pull back with an equal negative margin,
+     so the tap area grows while the layout stays exactly the same. */
+  main a.block:not([class*="py-"]):not([class*="h-"]):not([class*="my-"]):not([class*="mt-"]):not([class*="mb-"]) {
+    padding-block: 0.5rem;
+    margin-block: -0.5rem;
+  }
+}
+
+/* Responsive tables: below ~560px of available width each row becomes a labelled card
+   (labels come from the column headers via <TableLabels />), so phones never scroll sideways. */
+.rtable {
+  container: rtable / inline-size;
+}
+@container rtable (max-width: 560px) {
+  .rtable table {
+    min-width: 0;
+    display: block;
+  }
+  .rtable thead {
+    display: none;
+  }
+  .rtable tbody,
+  .rtable tfoot {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(17.5rem, 100%), 1fr));
+    gap: 0.625rem;
+  }
+  .rtable tfoot {
+    margin-top: 0.625rem;
+  }
+  .rtable tr {
+    display: block;
+    margin: 0;
+    padding: 0.5rem 0.875rem;
+    border: 1px solid var(--color-line);
+    border-radius: 1rem;
+    background: var(--color-card-2);
+  }
+  .rtable tfoot tr {
+    background: var(--color-accent-lo);
+  }
+  .rtable td {
+    display: flow-root;
+    min-height: 2.25rem;
+    padding: 0.375rem 0 !important;
+    border: 0 !important;
+    text-align: right;
+    line-height: 1.5rem;
+  }
+  /* Plain block content (e.g. level bars) sits beside the label instead of under it. */
+  .rtable td > div:not([class*="flex"]):not([class*="grid"]) {
+    display: flow-root;
+  }
+  .rtable td::before {
+    content: attr(data-label);
+    float: left;
+    margin-right: 0.75rem;
+    max-width: 50%;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-ink-3);
+  }
+  .rtable td[data-label=""]::before,
+  .rtable td:not([data-label])::before {
+    content: none;
+  }
+  .rtable td[data-label=""] {
+    text-align: left;
+  }
+  /* First cell is the row's title (e.g. the student or item name). */
+  .rtable td:first-child {
+    text-align: left;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    padding-bottom: 0.5rem !important;
+    border-bottom: 1px solid var(--color-line) !important;
+  }
+  .rtable td:first-child::before {
+    content: none;
+  }
+  .rtable td:only-child {
+    border-bottom: 0 !important;
+    margin-bottom: 0;
+  }
+  .rtable td:empty {
+    display: none;
+  }
+}
+/* Same card layout for any table <TableLabels /> measured as too wide for its container. */
+.rtable[data-stack] table {
+  min-width: 0;
+  display: block;
+}
+.rtable[data-stack] thead {
+  display: none;
+}
+.rtable[data-stack] tbody,
+.rtable[data-stack] tfoot {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(17.5rem, 100%), 1fr));
+  gap: 0.625rem;
+}
+.rtable[data-stack] tfoot {
+  margin-top: 0.625rem;
+}
+.rtable[data-stack] tr {
+  display: block;
+  margin: 0;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid var(--color-line);
+  border-radius: 1rem;
+  background: var(--color-card-2);
+}
+.rtable[data-stack] tfoot tr {
+  background: var(--color-accent-lo);
+}
+.rtable[data-stack] td {
+  display: flow-root;
+  min-height: 2.25rem;
+  padding: 0.375rem 0 !important;
+  border: 0 !important;
+  text-align: right;
+  line-height: 1.5rem;
+}
+/* Plain block content (e.g. level bars) sits beside the label instead of under it. */
+.rtable[data-stack] td > div:not([class*="flex"]):not([class*="grid"]) {
+  display: flow-root;
+}
+.rtable[data-stack] td::before {
+  content: attr(data-label);
+  float: left;
+  margin-right: 0.75rem;
+  max-width: 50%;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-ink-3);
+}
+.rtable[data-stack] td[data-label=""]::before,
+.rtable[data-stack] td:not([data-label])::before {
+  content: none;
+}
+.rtable[data-stack] td[data-label=""] {
+  text-align: left;
+}
+/* First cell is the row's title (e.g. the student or item name). */
+.rtable[data-stack] td:first-child {
+  text-align: left;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  padding-bottom: 0.5rem !important;
+  border-bottom: 1px solid var(--color-line) !important;
+}
+.rtable[data-stack] td:first-child::before {
+  content: none;
+}
+.rtable[data-stack] td:only-child {
+  border-bottom: 0 !important;
+  margin-bottom: 0;
+}
+.rtable[data-stack] td:empty {
+  display: none;
+}
+
 
 @media print {
   html,

@@ -6,9 +6,6 @@ import { setupOwnerAction } from "../actions";
 export function SetupForm() {
   return (
     <ActionForm action={setupOwnerAction} resetOnSuccess={false} redirectTo={(d) => d?.redirect ?? "/dashboard"}>
-      <Field label="Hostel name" name="hostelName" required>
-        <Input name="hostelName" placeholder="e.g. Greenview Student Hostel" />
-      </Field>
       <Field label="Your full name" name="name" required>
         <Input name="name" autoComplete="name" />
       </Field>

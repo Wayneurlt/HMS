@@ -1,3 +1,4 @@
+import { APP_NAME } from "@/lib/brand";
 import "server-only";
 import { db } from "@/lib/db";
 import { toNumber } from "@/lib/format";
@@ -29,7 +30,7 @@ export async function getPublicInfo(): Promise<PublicInfo | null> {
       db.user.count({ where: { role: "OWNER" } }),
     ]);
     return {
-      name: settings.hostelName,
+      name: APP_NAME,
       address: settings.address,
       phone: settings.phone,
       email: settings.email,

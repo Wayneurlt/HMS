@@ -105,7 +105,7 @@ export default async function MealRecordsPage({
                 className="h-10 rounded-xl border border-line-2 bg-card-2 px-3 text-sm text-ink focus:border-accent focus:outline-none"
               />
             </label>
-            <button type="submit" className="h-10 rounded-full bg-accent px-4 text-sm font-medium text-white hover:bg-accent-hi">
+            <button type="submit" className="h-10 rounded-full bg-accent px-4 text-sm font-medium text-accent-ink hover:bg-accent-hover">
               Apply
             </button>
           </form>

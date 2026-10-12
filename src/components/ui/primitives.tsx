@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { initials as toInitials } from "@/lib/format";
+import { TableLabels } from "./table-labels";
 
 // ───────── Card ─────────
 
@@ -47,7 +48,7 @@ export function buttonClass(variant: ButtonVariant = "secondary", size: ButtonSi
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
     "disabled:cursor-not-allowed disabled:opacity-50",
     {
-      primary: "bg-accent text-white hover:bg-accent-hi",
+      primary: "bg-accent text-accent-ink hover:bg-accent-hover",
       secondary: "bg-card-2 text-ink hover:bg-card-3 border border-line-2/60",
       outline: "border border-line-2 text-ink hover:bg-card-2",
       ghost: "text-ink-2 hover:bg-card-2 hover:text-ink",
@@ -57,7 +58,7 @@ export function buttonClass(variant: ButtonVariant = "secondary", size: ButtonSi
       sm: "h-8 px-3 text-xs",
       md: "h-10 px-4 text-sm",
       lg: "h-12 px-6 text-sm",
-      icon: "h-10 w-10",
+      icon: "h-10 w-10 tap-icon",
     }[size],
     className,
   );
@@ -139,10 +140,15 @@ export function EmptyState({ icon, title, description, action }: { icon?: ReactN
 
 // ───────── Table ─────────
 
+/**
+ * Responsive table. Wide containers show a normal table (scrolling sideways if needed);
+ * phone-width containers show each row as a labelled card (see `.rtable` in globals.css).
+ */
 export function Table({ children, className }: { children: ReactNode; className?: string }) {
   return (
     // `relative` contains absolutely-positioned descendants (e.g. sr-only headers) inside the scroller.
-    <div className={cn("relative -mx-5 overflow-x-auto px-5", className)}>
+    <div className={cn("rtable relative -mx-5 overflow-x-auto px-5", className)}>
+      <TableLabels />
       <table className="w-full min-w-160 border-separate border-spacing-0 text-sm">{children}</table>
     </div>
   );

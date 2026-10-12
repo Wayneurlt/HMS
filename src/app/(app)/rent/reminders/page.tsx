@@ -1,3 +1,4 @@
+import { APP_NAME } from "@/lib/brand";
 import Link from "next/link";
 import { ArrowLeft, BellRing, Pause, Pencil, Play, PlayCircle, Plus, Trash2 } from "lucide-react";
 import { db } from "@/lib/db";
@@ -8,7 +9,6 @@ import { formatMoney, label } from "@/lib/format";
 import { getMessagingProvider } from "@/lib/messaging";
 import { ACTIONS } from "@/lib/services/activity";
 import type { ReminderRunResult } from "@/lib/services/reminders";
-import { getSettings } from "@/lib/services/settings";
 import { ConfirmAction, Dialog } from "@/components/ui/dialog";
 import { Badge, Callout, Card, EmptyState, PageHeader, Table, TD, TH, THead } from "@/components/ui/primitives";
 import { StatusBadge } from "@/components/ui/status";
@@ -24,14 +24,13 @@ export default async function RemindersPage() {
   const canEdit = can(user.role, "reminders.manage");
   const canRun = can(user.role, "rent.manage");
 
-  const [rules, logs, settings, lastRun] = await Promise.all([
+  const [rules, logs, lastRun] = await Promise.all([
     db.reminderRule.findMany({ orderBy: { offsetDays: "asc" }, include: { _count: { select: { logs: true } } } }),
     db.reminderLog.findMany({
       orderBy: { createdAt: "desc" },
       take: 100,
       include: { student: { select: { id: true, fullName: true } } },
     }),
-    getSettings(),
     db.activityLog.findFirst({ where: { action: ACTIONS.REMINDERS_RUN }, orderBy: { createdAt: "desc" } }),
   ]);
   const provider = getMessagingProvider();
@@ -46,12 +45,12 @@ export default async function RemindersPage() {
     amount: formatMoney(10000),
     outstanding: formatMoney(4000),
     dueDate: formatDate(addDays(t, 3)),
-    hostel: settings.hostelName,
+    hostel: APP_NAME,
   };
 
   return (
     <div>
-      <Link href="/rent" className="mb-3 inline-flex items-center gap-1.5 text-xs text-ink-2 hover:text-ink">
+      <Link href="/rent" className="mb-1 inline-flex items-center gap-1.5 py-2 text-xs text-ink-2 hover:text-ink">
         <ArrowLeft className="h-3.5 w-3.5" /> Rent
       </Link>
       <PageHeader
@@ -253,12 +252,12 @@ export default async function RemindersPage() {
               {logs.map((l) => (
                 <tr key={l.id}>
                   <TD className="whitespace-nowrap text-xs text-ink-2">
-                    <Link href={`/rent/${l.invoiceId}`} className="hover:text-accent">
+                    <Link href={`/rent/${l.invoiceId}`} className="hover:text-accent-hi">
                       {formatDateTime(l.createdAt)}
                     </Link>
                   </TD>
                   <TD>
-                    <Link href={`/students/${l.student.id}`} className="hover:text-accent">
+                    <Link href={`/students/${l.student.id}`} className="hover:text-accent-hi">
                       {l.student.fullName}
                     </Link>
                   </TD>

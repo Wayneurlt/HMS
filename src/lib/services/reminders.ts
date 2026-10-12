@@ -1,3 +1,4 @@
+import { APP_NAME } from "@/lib/brand";
 import "server-only";
 import type { ReminderRule, ReminderType } from "@prisma/client";
 import { db } from "@/lib/db";
@@ -7,7 +8,6 @@ import { getMessagingProvider } from "@/lib/messaging";
 import { ACTIONS, logActivity } from "./activity";
 import { notifyRoles, notifyUsers } from "./notifications";
 import { ensureRentInvoices, outstandingOf, syncRentStatuses } from "./rent";
-import { getSettings } from "./settings";
 
 /** How many days after a rule's trigger day it may still fire (covers missed cron runs). */
 const GRACE_DAYS = 3;
@@ -67,10 +67,7 @@ export async function runRentReminders(opts: { userId?: string | null; today?: D
   const invoicesGenerated = await ensureRentInvoices(db, { userId: opts.userId ?? null, upTo: today });
   const markedOverdue = await syncRentStatuses(db, today);
 
-  const [settings, rules] = await Promise.all([
-    getSettings(),
-    db.reminderRule.findMany({ where: { isActive: true }, orderBy: { offsetDays: "asc" } }),
-  ]);
+  const rules = await db.reminderRule.findMany({ where: { isActive: true }, orderBy: { offsetDays: "asc" } });
   const provider = getMessagingProvider();
   const result: ReminderRunResult = {
     date: toISODate(today),
@@ -111,7 +108,7 @@ export async function runRentReminders(opts: { userId?: string | null; today?: D
         amount: formatMoney(inv.amountDue),
         outstanding: formatMoney(outstanding),
         dueDate: formatDate(inv.dueDate),
-        hostel: settings.hostelName,
+        hostel: APP_NAME,
       });
       const type = reminderTypeFor(rule.offsetDays);
 

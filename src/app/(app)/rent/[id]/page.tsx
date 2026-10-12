@@ -63,14 +63,14 @@ export default async function RentInvoicePage({ params }: { params: Promise<{ id
 
   return (
     <div>
-      <Link href="/rent" className="mb-3 inline-flex items-center gap-1.5 text-xs text-ink-2 hover:text-ink">
+      <Link href="/rent" className="mb-1 inline-flex items-center gap-1.5 py-2 text-xs text-ink-2 hover:text-ink">
         <ArrowLeft className="h-3.5 w-3.5" /> Rent
       </Link>
       <PageHeader
         title={`${monthLong} rent`}
         description={
           <span className="inline-flex flex-wrap items-center gap-2">
-            <Link href={`/students/${inv.student.id}`} className="text-ink hover:text-accent">
+            <Link href={`/students/${inv.student.id}`} className="text-ink hover:text-accent-hi">
               {inv.student.fullName}
             </Link>
             {voided ? <span className="text-xs text-ink-3">Voided</span> : <StatusBadge kind="rent" value={inv.status} />}
@@ -169,7 +169,7 @@ export default async function RentInvoicePage({ params }: { params: Promise<{ id
           <div className="mb-4 flex items-center gap-3">
             <Avatar name={inv.student.fullName} size={40} />
             <div className="min-w-0">
-              <Link href={`/students/${inv.student.id}`} className="block truncate text-sm font-medium text-ink hover:text-accent">
+              <Link href={`/students/${inv.student.id}`} className="block truncate text-sm font-medium text-ink hover:text-accent-hi">
                 {inv.student.fullName}
               </Link>
               <div className="text-xs text-ink-3">
@@ -314,7 +314,7 @@ export default async function RentInvoicePage({ params }: { params: Promise<{ id
             title="No reminders yet"
             description={
               <>
-                Reminders follow the <Link href="/rent/reminders" className="text-accent">reminder schedule</Link>.
+                Reminders follow the <Link href="/rent/reminders" className="text-accent-hi">reminder schedule</Link>.
               </>
             }
           />

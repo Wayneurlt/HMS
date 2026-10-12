@@ -4,7 +4,6 @@ import { ActionForm, Checkbox, Field, FormActions, FormGrid, Input, SubmitButton
 import { updateSettings } from "./actions";
 
 export type SettingsValues = {
-  hostelName: string;
   address: string;
   phone: string;
   email: string;
@@ -19,9 +18,6 @@ export function SettingsForm({ initial }: { initial: SettingsValues }) {
   return (
     <ActionForm action={updateSettings} resetOnSuccess={false}>
       <h3 className="text-xs font-medium uppercase tracking-wide text-ink-3">Hostel</h3>
-      <Field label="Hostel name" name="hostelName" required>
-        <Input name="hostelName" defaultValue={initial.hostelName} maxLength={100} />
-      </Field>
       <Field label="Address" name="address">
         <Input name="address" defaultValue={initial.address} maxLength={300} />
       </Field>

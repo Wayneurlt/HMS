@@ -1,3 +1,4 @@
+import { MasqaniLogo } from "@/components/brand/masqani-logo";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -22,7 +23,6 @@ import { can } from "@/lib/auth/permissions";
 import { formatDate, formatDayLong, timeAgo } from "@/lib/dates";
 import { formatMoney, label } from "@/lib/format";
 import { getDashboardData, type DashboardRange } from "@/lib/services/dashboard";
-import { getSettings } from "@/lib/services/settings";
 import { runDailyJobsIfDue } from "@/lib/services/reminders";
 import { DonutChart, Legend, SERIES, TrendAreaChart } from "@/components/charts";
 import { Avatar, Badge, Card, EmptyState, LinkButton, Ring, SegmentedProgress, StatCard } from "@/components/ui/primitives";
@@ -42,7 +42,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
   // Daily rent job (invoice generation, overdue status, reminders) — at most once per day.
   await runDailyJobsIfDue();
-  const [d, settings] = await Promise.all([getDashboardData({ range, includeFinance: finance }), getSettings()]);
+  const d = await getDashboardData({ range, includeFinance: finance });
 
   const collectedPct = d.rent.expected > 0 ? Math.round((d.rent.paidAgainstPeriod / d.rent.expected) * 100) : 0;
   const tonightPct = d.tonight.residents > 0 ? Math.round((d.tonight.expected / d.tonight.residents) * 100) : 0;
@@ -253,7 +253,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           <Badge tone="accent" className="-mt-3 mb-4">
             {d.beds.rate >= 90 ? "Full house" : d.beds.rate >= 60 ? "Healthy" : "Room to fill"}
           </Badge>
-          <OccupancyCard rate={d.beds.rate} occupied={d.beds.occupied} total={d.beds.total} hostel={settings.hostelName} />
+          <OccupancyCard rate={d.beds.rate} occupied={d.beds.occupied} total={d.beds.total} />
           <div className="mt-4 flex items-baseline justify-between px-1">
             <p className="tabular text-lg font-medium tracking-[0.2em] text-ink">
               {String(d.beds.occupied).padStart(2, "0")} / {String(d.beds.total).padStart(2, "0")}
@@ -285,7 +285,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                 <UserCheck className="h-3.5 w-3.5" /> {d.tonight.notResponded} not responded (counted as expected)
               </p>
             )}
-            <Link href="/overnight" className="mt-3 inline-flex items-center gap-1 text-xs text-accent-hi hover:underline">
+            <Link href="/overnight" className="mt-1 inline-flex items-center gap-1 py-2 text-xs text-accent-hi hover:underline">
               Overnight details <ChevronRight className="h-3 w-3" />
             </Link>
           </div>
@@ -352,15 +352,15 @@ function MiniStat({ icon, label, value }: { icon: React.ReactNode; label: string
 }
 
 /** The "card" visual from the reference design, repurposed as an occupancy card. */
-function OccupancyCard({ rate, occupied, total, hostel }: { rate: number; occupied: number; total: number; hostel: string }) {
+function OccupancyCard({ rate, occupied, total }: { rate: number; occupied: number; total: number }) {
   return (
     <div className="relative aspect-[1.75] w-full overflow-hidden rounded-2xl border border-line-2 card-art p-4">
       <svg viewBox="0 0 300 170" className="absolute inset-0 h-full w-full" preserveAspectRatio="none" aria-hidden>
         <defs>
           <linearGradient id="occ-wave" x1="0" x2="1" y1="0" y2="0">
-            <stop offset="0" stopColor="#c8c2ff" />
-            <stop offset="0.5" stopColor="#8b7cf6" />
-            <stop offset="1" stopColor="#e9e6ff" />
+            <stop offset="0" stopColor="#ffffff" />
+            <stop offset="0.5" stopColor="#9ad9ea" />
+            <stop offset="1" stopColor="#e6f6fb" />
           </linearGradient>
         </defs>
         <path
@@ -378,7 +378,7 @@ function OccupancyCard({ rate, occupied, total, hostel }: { rate: number; occupi
           <Wifi className="h-4 w-4 rotate-90 text-ink-2" />
         </div>
         <div className="flex items-end justify-between">
-          <span className="max-w-[70%] truncate text-[11px] text-ink-2">{hostel}</span>
+          <MasqaniLogo variant="inline" className="h-5" />
           <span className="tabular text-[11px] text-ink-2">
             {occupied}/{total}
           </span>

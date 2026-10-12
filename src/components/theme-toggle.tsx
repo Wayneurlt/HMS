@@ -12,7 +12,7 @@ function effectiveTheme(): ThemeChoice {
 }
 
 /**
- * Switches between light and dark. Until the user picks, the OS preference applies;
+ * Switches between light and dark. Until the user picks, the light theme applies;
  * after that the choice is stored in a cookie and applied server-side on every page.
  */
 export function ThemeToggle({ className }: { className?: string }) {

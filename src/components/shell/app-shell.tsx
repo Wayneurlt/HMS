@@ -4,23 +4,22 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import {
-  Activity,
   BarChart3,
   Bell,
   BedDouble,
-  Building2,
   CalendarDays,
   ChefHat,
   ChevronDown,
+  ChevronRight,
   ClipboardList,
   DoorOpen,
+  Ellipsis,
   History,
   Info,
   KeyRound,
   LayoutGrid,
   LogOut,
   Megaphone,
-  Menu,
   Moon,
   NotebookPen,
   Package,
@@ -42,6 +41,7 @@ import { activeHref, type IconName, type NavItem } from "@/lib/nav";
 import { label } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { logoutAction } from "@/app/(auth)/actions";
+import { MasqaniLogo } from "@/components/brand/masqani-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { setPreferenceCookie, SIDEBAR_COOKIE } from "@/lib/preferences";
 
@@ -73,14 +73,12 @@ export type ShellUser = { name: string; email: string | null; phone: string | nu
 
 export function AppShell({
   user,
-  hostelName,
   nav,
   unread,
   sidebarExpanded,
   children,
 }: {
   user: ShellUser;
-  hostelName: string;
   nav: NavItem[];
   unread: number;
   /** Initial sidebar state from the preference cookie. */
@@ -109,14 +107,11 @@ export function AppShell({
 
   return (
     <div className="min-h-dvh bg-page">
-      <div className="flex min-h-dvh w-full flex-col px-3 pb-6 sm:px-5">
+      <div className="flex min-h-dvh w-full flex-col px-3 pb-22 sm:px-5 lg:pb-6">
         {/* ── Top bar ── */}
-        <header className="sticky top-0 z-40 -mx-3 flex h-19 items-center gap-3 bg-page/85 px-3 backdrop-blur sm:-mx-5 sm:px-5">
-          <Link href={nav[0]?.href ?? "/"} className="flex h-12 shrink-0 items-center gap-2.5 rounded-full border border-line bg-card pl-1.5 pr-4">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-accent text-white">
-              <Building2 className="h-4.5 w-4.5" />
-            </span>
-            <span className="max-w-35 truncate text-sm font-semibold text-ink">{hostelName}</span>
+        <header className="sticky top-0 z-40 -mx-3 flex h-[calc(4.75rem+env(safe-area-inset-top))] items-center gap-3 bg-page/85 px-3 pt-[env(safe-area-inset-top)] backdrop-blur sm:-mx-5 sm:px-5">
+          <Link href={nav[0]?.href ?? "/"} className="flex h-12 shrink-0 items-center rounded-full border border-line bg-card px-3">
+            <MasqaniLogo variant="inline" className="h-8" />
           </Link>
 
           <nav className="no-scrollbar mx-auto hidden items-center gap-1.5 overflow-x-auto xl:flex" aria-label="Primary">
@@ -191,14 +186,6 @@ export function AppShell({
               )}
             </div>
 
-            <button
-              type="button"
-              className="grid h-12 w-12 place-items-center rounded-full border border-line bg-card text-ink lg:hidden"
-              onClick={() => setDrawer(true)}
-              aria-label="Open menu"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
           </div>
         </header>
 
@@ -273,59 +260,178 @@ export function AppShell({
         </div>
       </div>
 
-      {/* ── Mobile drawer ── */}
-      {drawer && (
-        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true">
-          <div className="absolute inset-0 bg-black/70" onClick={() => setDrawer(false)} />
-          <div className="absolute inset-y-0 right-0 flex w-[min(320px,88vw)] flex-col border-l border-line bg-card p-4">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="grid h-10 w-10 place-items-center rounded-full bg-[#ef6a3c] text-sm font-bold text-white">
-                  {user.name.charAt(0).toUpperCase()}
+      {/* ── Mobile: bottom tab bar (iOS style) + "More" sheet ── */}
+      <MobileTabBar nav={nav} active={active} moreOpen={drawer} onMore={() => setDrawer((d) => !d)} />
+      {drawer && <MoreSheet nav={nav} active={active} user={user} unread={unread} onClose={() => setDrawer(false)} />}
+    </div>
+  );
+}
+
+// ───────── Mobile navigation ─────────
+
+/** Bottom tab bar shown below the lg breakpoint: four role tabs + "More". */
+function MobileTabBar({
+  nav,
+  active,
+  moreOpen,
+  onMore,
+}: {
+  nav: NavItem[];
+  active: string | null;
+  moreOpen: boolean;
+  onMore: () => void;
+}) {
+  const tabs = nav.filter((n) => n.tab).slice(0, 4);
+  const onTab = tabs.some((t) => t.href === active);
+  const moreOn = moreOpen || (!onTab && active !== null);
+  return (
+    <nav
+      aria-label="Tabs"
+      className="bottom-tabs fixed inset-x-0 bottom-0 z-40 border-t border-line bg-card/85 backdrop-blur-xl backdrop-saturate-150 lg:hidden"
+    >
+      <ul className="mx-auto grid max-w-xl grid-cols-5">
+        {tabs.map((item) => {
+          const Icon = ICONS[item.icon];
+          const on = active === item.href && !moreOpen;
+          return (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                aria-current={on ? "page" : undefined}
+                className={cn(
+                  "flex h-14 flex-col items-center justify-center gap-1 text-[10px] font-medium leading-none transition-colors",
+                  on ? "text-ink" : "text-ink-3 active:text-ink",
+                )}
+              >
+                <span className={cn("grid h-7 w-12 place-items-center rounded-full transition-colors", on && "bg-accent text-accent-ink")}>
+                  <Icon className="h-5.5 w-5.5" strokeWidth={on ? 2.25 : 1.75} />
                 </span>
-                <div>
-                  <p className="text-sm font-medium text-ink">{user.name}</p>
-                  <p className="text-xs text-ink-3">{label(user.role)}</p>
-                </div>
-              </div>
-              <button type="button" onClick={() => setDrawer(false)} className="grid h-9 w-9 place-items-center rounded-full text-ink-2 hover:bg-card-2" aria-label="Close menu">
-                <X className="h-5 w-5" />
-              </button>
+                <span className={cn("max-w-full truncate px-1", on && "font-semibold")}>{item.short ?? item.label}</span>
+              </Link>
+            </li>
+          );
+        })}
+        <li>
+          <button
+            type="button"
+            onClick={onMore}
+            aria-expanded={moreOpen}
+            aria-haspopup="dialog"
+            className={cn(
+              "flex h-14 w-full flex-col items-center justify-center gap-1 text-[10px] font-medium leading-none transition-colors",
+              moreOn ? "text-ink" : "text-ink-3 active:text-ink",
+            )}
+          >
+            <span className={cn("grid h-7 w-12 place-items-center rounded-full transition-colors", moreOn && "bg-accent text-accent-ink")}>
+              <Ellipsis className="h-5.5 w-5.5" strokeWidth={moreOn ? 2.25 : 1.75} />
+            </span>
+            <span className={cn(moreOn && "font-semibold")}>More</span>
+          </button>
+        </li>
+      </ul>
+    </nav>
+  );
+}
+
+/** Bottom sheet with every section that is not a tab, plus account and sign out. */
+function MoreSheet({
+  nav,
+  active,
+  user,
+  unread,
+  onClose,
+}: {
+  nav: NavItem[];
+  active: string | null;
+  user: ShellUser;
+  unread: number;
+  onClose: () => void;
+}) {
+  const rest = nav.filter((n) => !n.tab);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [onClose]);
+
+  const row = "flex min-h-12 items-center gap-3 px-4 py-2.5 text-[15px] transition-colors active:bg-card-3";
+  return (
+    <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="More">
+      <div className="animate-fade absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="animate-sheet absolute inset-x-0 bottom-0 flex max-h-[85dvh] flex-col rounded-t-3xl border-t border-line bg-page pb-4 shadow-2xl">
+        <div className="flex shrink-0 justify-center pb-1 pt-2.5" aria-hidden>
+          <span className="h-1.5 w-10 rounded-full bg-line-2" />
+        </div>
+        <div className="flex shrink-0 items-center justify-between gap-3 px-5 pb-3 pt-1">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#ef6a3c] text-sm font-bold text-white">
+              {user.name.charAt(0).toUpperCase()}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-base font-semibold text-ink">{user.name}</p>
+              <p className="truncate text-xs text-ink-3">{label(user.role)}</p>
             </div>
-            <nav className="flex-1 space-y-1 overflow-y-auto">
-              {nav.map((item) => {
+          </div>
+          <button type="button" onClick={onClose} className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-card-2 text-ink-2" aria-label="Close">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 pb-2">
+          {rest.length > 0 && (
+            <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-card">
+              {rest.map((item) => {
                 const Icon = ICONS[item.icon];
                 const on = active === item.href;
                 return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm",
-                      on ? "bg-card-3 text-ink" : "text-ink-2 hover:bg-card-2 hover:text-ink",
-                    )}
-                  >
-                    <Icon className={cn("h-4.5 w-4.5", on && "text-accent-hi")} />
-                    {item.label}
-                    {item.href === "/notifications" && unread > 0 && (
-                      <span className="ml-auto rounded-full bg-[#ef5a3c] px-1.5 text-[10px] font-bold text-white">{unread}</span>
-                    )}
-                  </Link>
+                  <li key={item.href}>
+                    <Link href={item.href} aria-current={on ? "page" : undefined} className={cn(row, on ? "text-accent" : "text-ink")}>
+                      <span className={cn("grid h-8 w-8 shrink-0 place-items-center rounded-lg", on ? "bg-accent text-accent-ink" : "bg-card-3 text-ink-2")}>
+                        <Icon className="h-4.5 w-4.5" />
+                      </span>
+                      <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                      {item.href === "/notifications" && unread > 0 && (
+                        <span className="rounded-full bg-[#ef5a3c] px-2 py-0.5 text-[11px] font-bold text-white">{unread}</span>
+                      )}
+                      <ChevronRight className="h-4 w-4 shrink-0 text-ink-3" />
+                    </Link>
+                  </li>
                 );
               })}
-              <Link href="/account" className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-ink-2 hover:bg-card-2 hover:text-ink">
-                <Activity className="h-4.5 w-4.5" />
-                Account & password
+            </ul>
+          )}
+
+          <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-card">
+            <li>
+              <Link href="/account" className={cn(row, "text-ink")}>
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-card-3 text-ink-2">
+                  <KeyRound className="h-4.5 w-4.5" />
+                </span>
+                <span className="flex-1">Account & password</span>
+                <ChevronRight className="h-4 w-4 shrink-0 text-ink-3" />
               </Link>
-            </nav>
-            <form action={logoutAction} className="border-t border-line pt-3">
-              <button type="submit" className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-ink-2 hover:bg-card-2 hover:text-bad">
-                <LogOut className="h-4.5 w-4.5" /> Sign out
-              </button>
-            </form>
-          </div>
+            </li>
+            <li>
+              <form action={logoutAction}>
+                <button type="submit" className={cn(row, "w-full text-bad")}>
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-bad-lo">
+                    <LogOut className="h-4.5 w-4.5" />
+                  </span>
+                  Sign out
+                </button>
+              </form>
+            </li>
+          </ul>
         </div>
-      )}
+      </div>
     </div>
   );
 }

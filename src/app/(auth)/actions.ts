@@ -100,7 +100,6 @@ const setupSchema = z
     phone: zPhone(false),
     password: zPassword(),
     confirm: z.string(),
-    hostelName: zText(100, "Hostel name"),
   })
   .refine((v) => v.password === v.confirm, { path: ["confirm"], message: "Passwords do not match" });
 
@@ -124,7 +123,6 @@ export async function setupOwnerAction(fd: FormData): Promise<ActionResult<{ red
       data: { name: v.name, email: v.email, phone: v.phone, passwordHash, role: "OWNER" },
     });
     await getSettings(tx);
-    await tx.hostelSettings.update({ where: { id: 1 }, data: { hostelName: v.hostelName } });
     await logActivity(tx, { userId: user.id, action: ACTIONS.OWNER_SETUP, entityType: "User", entityId: user.id });
     return user;
   });

@@ -127,7 +127,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
               />
             </label>
           )}
-          <button type="submit" className="inline-flex h-10 items-center gap-2 rounded-full bg-accent px-4 text-sm font-medium text-white hover:bg-accent-hi">
+          <button type="submit" className="inline-flex h-10 items-center gap-2 rounded-full bg-accent px-4 text-sm font-medium text-accent-ink hover:bg-accent-hover">
             <CalendarRange className="h-4 w-4" /> Apply
           </button>
           {(range.preset !== "this-month" || category) && (

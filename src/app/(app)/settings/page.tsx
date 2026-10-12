@@ -23,7 +23,6 @@ export default async function SettingsPage() {
         <Card title="Hostel settings" subtitle={`Last updated ${formatDateTime(s.updatedAt)}`} className="@6xl:col-span-2">
           <SettingsForm
             initial={{
-              hostelName: s.hostelName,
               address: s.address ?? "",
               phone: s.phone ?? "",
               email: s.email ?? "",

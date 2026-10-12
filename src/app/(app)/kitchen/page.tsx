@@ -277,7 +277,7 @@ export default async function KitchenDashboardPage() {
                     ))}
                 </ul>
               )}
-              <Link href="/kitchen/records" className="mt-3 inline-flex items-center gap-1 text-xs text-accent-hi hover:underline">
+              <Link href="/kitchen/records" className="mt-1 inline-flex items-center gap-1 py-2 text-xs text-accent-hi hover:underline">
                 Meal records <ArrowRight className="h-3 w-3" />
               </Link>
             </section>

@@ -7,7 +7,7 @@ import { defineAction } from "@/lib/action";
 import { toNumber } from "@/lib/format";
 import { ACTIONS, logActivity } from "@/lib/services/activity";
 import { getSettings } from "@/lib/services/settings";
-import { zCheckbox, zEmail, zInt, zMoney, zOptText, zPhone, zText } from "@/lib/validation/common";
+import { zCheckbox, zEmail, zInt, zMoney, zOptText, zPhone } from "@/lib/validation/common";
 
 const zTime = (label: string) =>
   z
@@ -16,7 +16,6 @@ const zTime = (label: string) =>
     .regex(/^([01]\d|2[0-3]):[0-5]\d$/, `${label} must be a time like 07:00`);
 
 const settingsSchema = z.object({
-  hostelName: zText(100, "Hostel name"),
   address: zOptText(300),
   phone: zPhone(false),
   email: zEmail(false),
@@ -33,7 +32,6 @@ export const updateSettings = defineAction(
     await db.$transaction(async (tx) => {
       const before = await getSettings(tx);
       const prev: Record<string, unknown> = {
-        hostelName: before.hostelName,
         address: before.address,
         phone: before.phone,
         email: before.email,

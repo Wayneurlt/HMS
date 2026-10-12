@@ -42,6 +42,10 @@ function createClient(): PrismaClient {
   });
   return new PrismaClient({
     adapter,
+    // Prisma's defaults (2s to start, 5s to finish an interactive transaction) are too tight
+    // for a remote database: a check-in with a backdated move-in creates several months of
+    // rent in one transaction, and each round trip to Neon can take a few hundred ms.
+    transactionOptions: { maxWait: 10_000, timeout: 30_000 },
     log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],
   });
 }

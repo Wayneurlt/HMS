@@ -192,7 +192,7 @@ export default async function ActivityPage({ searchParams }: { searchParams: Pro
             <Input name="to" type="date" defaultValue={to ? toISODate(to) : ""} />
           </label>
           <div className="flex items-center gap-2">
-            <button type="submit" className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-full bg-accent px-4 text-sm font-medium text-white hover:bg-accent-hi">
+            <button type="submit" className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-full bg-accent px-4 text-sm font-medium text-accent-ink hover:bg-accent-hover">
               <Filter className="h-4 w-4" /> Filter
             </button>
             {filtered && (

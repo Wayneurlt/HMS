@@ -262,7 +262,7 @@ export default async function RentPage({ searchParams }: { searchParams: SearchP
                   <li key={id} className="flex items-center gap-3 py-2.5">
                     <Avatar name={name} size={30} />
                     <div className="min-w-0 flex-1">
-                      <Link href={`/students/${id}`} className="block truncate text-sm text-ink hover:text-accent">
+                      <Link href={`/students/${id}`} className="block truncate text-sm text-ink hover:text-accent-hi">
                         {name}
                       </Link>
                       <Link href={href({ student: id, status: undefined, scope: undefined, q: undefined })} className="text-xs text-ink-3 hover:text-ink-2">
@@ -383,13 +383,13 @@ export default async function RentPage({ searchParams }: { searchParams: SearchP
                     <TD>
                       <div className="flex items-center gap-2.5">
                         <Avatar name={inv.student.fullName} size={28} />
-                        <Link href={`/students/${inv.student.id}`} className="truncate hover:text-accent">
+                        <Link href={`/students/${inv.student.id}`} className="truncate hover:text-accent-hi">
                           {inv.student.fullName}
                         </Link>
                       </div>
                     </TD>
                     <TD>
-                      <Link href={`/rent/${inv.id}`} className={`hover:text-accent ${voided ? "line-through" : ""}`}>
+                      <Link href={`/rent/${inv.id}`} className={`hover:text-accent-hi ${voided ? "line-through" : ""}`}>
                         {formatMonth(inv.periodMonth)}
                       </Link>
                     </TD>

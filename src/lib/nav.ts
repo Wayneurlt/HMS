@@ -35,16 +35,20 @@ export type NavItem = {
   permission?: Permission;
   /** Shown in the top pill bar on desktop. */
   primary?: boolean;
+  /** One of the four tabs in the mobile bottom tab bar (the fifth tab is "More"). */
+  tab?: boolean;
+  /** Short label for the bottom tab bar. */
+  short?: string;
 };
 
 const ADMIN_NAV: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: "dashboard", permission: "dashboard.admin", primary: true },
-  { href: "/students", label: "Students", icon: "students", permission: "students.view", primary: true },
+  { href: "/dashboard", label: "Dashboard", icon: "dashboard", permission: "dashboard.admin", primary: true, tab: true, short: "Home" },
+  { href: "/students", label: "Students", icon: "students", permission: "students.view", primary: true, tab: true },
   { href: "/rooms", label: "Rooms & Beds", icon: "rooms", permission: "rooms.view" },
-  { href: "/rent", label: "Rent", icon: "rent", permission: "rent.view", primary: true },
+  { href: "/rent", label: "Rent", icon: "rent", permission: "rent.view", primary: true, tab: true },
   { href: "/overnight", label: "Overnight", icon: "overnight", permission: "overnight.view" },
   { href: "/meals", label: "Meals", icon: "meals", permission: "meals.manage" },
-  { href: "/kitchen", label: "Kitchen", icon: "kitchen", permission: "stock.view", primary: true },
+  { href: "/kitchen", label: "Kitchen", icon: "kitchen", permission: "stock.view", primary: true, tab: true },
   { href: "/announcements", label: "Announcements", icon: "announcements", permission: "announcements.manage" },
   { href: "/reports", label: "Reports", icon: "reports", permission: "reports.operational", primary: true },
   { href: "/notifications", label: "Notifications", icon: "notifications" },
@@ -54,23 +58,23 @@ const ADMIN_NAV: NavItem[] = [
 ];
 
 const KITCHEN_NAV: NavItem[] = [
-  { href: "/kitchen", label: "Dashboard", icon: "dashboard", primary: true },
-  { href: "/kitchen/today", label: "Today's Meals", icon: "today", primary: true },
-  { href: "/kitchen/stock", label: "Stock", icon: "stock", primary: true },
+  { href: "/kitchen", label: "Dashboard", icon: "dashboard", primary: true, tab: true, short: "Home" },
+  { href: "/kitchen/today", label: "Today's Meals", icon: "today", primary: true, tab: true, short: "Today" },
+  { href: "/kitchen/stock", label: "Stock", icon: "stock", primary: true, tab: true },
   { href: "/kitchen/purchases", label: "Purchases", icon: "purchases", primary: true },
-  { href: "/kitchen/requests", label: "Shopping Requests", icon: "requests", primary: true },
+  { href: "/kitchen/requests", label: "Shopping Requests", icon: "requests", primary: true, tab: true, short: "Requests" },
   { href: "/kitchen/expenses", label: "Expenses", icon: "expenses" },
   { href: "/kitchen/records", label: "Meal Records", icon: "records" },
   { href: "/notifications", label: "Notifications", icon: "notifications" },
 ];
 
 const STUDENT_NAV: NavItem[] = [
-  { href: "/me", label: "Dashboard", icon: "dashboard", primary: true },
+  { href: "/me", label: "Dashboard", icon: "dashboard", primary: true, tab: true, short: "Home" },
   { href: "/me/profile", label: "My Profile", icon: "profile" },
   { href: "/me/room", label: "My Room", icon: "room" },
-  { href: "/me/rent", label: "My Rent", icon: "rent", primary: true },
-  { href: "/me/overnight", label: "My Overnight Status", icon: "overnight", primary: true },
-  { href: "/me/meals", label: "Meals", icon: "meals", primary: true },
+  { href: "/me/rent", label: "My Rent", icon: "rent", primary: true, tab: true, short: "Rent" },
+  { href: "/me/overnight", label: "My Overnight Status", icon: "overnight", primary: true, tab: true, short: "Overnight" },
+  { href: "/me/meals", label: "Meals", icon: "meals", primary: true, tab: true },
   { href: "/me/announcements", label: "Announcements", icon: "announcements", primary: true },
   { href: "/notifications", label: "Notifications", icon: "notifications" },
 ];
