@@ -7,7 +7,7 @@ export type MealFormValues = {
   id?: string;
   /** YYYY-MM-DD */
   date: string;
-  type: "BREAKFAST" | "DINNER";
+  type: "BREAKFAST" | "LUNCH" | "DINNER";
   menu?: string;
   notes?: string;
 };
@@ -26,12 +26,13 @@ export function MealForm({ initial, lockSlot }: { initial: MealFormValues; lockS
           <Field label="Date" name="date" required>
             <Input name="date" type="date" defaultValue={initial.date} />
           </Field>
-          <Field label="Meal" name="type" required>
+          <Field label="Meal" name="type" required hint="Lunch is served on Saturdays and Sundays">
             <Select
               name="type"
               defaultValue={initial.type}
               options={[
                 { value: "BREAKFAST", label: "Breakfast" },
+                { value: "LUNCH", label: "Lunch (weekends)" },
                 { value: "DINNER", label: "Dinner" },
               ]}
             />

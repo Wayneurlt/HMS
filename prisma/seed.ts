@@ -14,7 +14,7 @@
  * Test passwords (staff: Password123, students: Student123) are public — reset or remove
  * these accounts before using the system for real.
  */
-import type { InventoryCategory, MealType, PaymentMethod, Role } from "@prisma/client";
+import type { InventoryCategory, PaymentMethod, Role } from "@prisma/client";
 import { db } from "@/lib/db";
 import { hashPassword } from "@/lib/auth/password";
 import { addDays, addMonths, monthStart, today as todayFn, toISODate } from "@/lib/dates";
@@ -25,6 +25,7 @@ import { moveStock, recordPurchase, voidPurchase } from "@/lib/services/inventor
 import { ensureDefaultReminderRules, runRentReminders } from "@/lib/services/reminders";
 import { mealExpectation } from "@/lib/services/attendance";
 import { notifyRoles } from "@/lib/services/notifications";
+import { mealsFor } from "@/lib/meals";
 
 const STAFF_PW = "Password123";
 const STUDENT_PW = "Student123";
@@ -131,10 +132,10 @@ async function main() {
     db.rentInvoice.findMany({ where: { studentId, voidedAt: null }, orderBy: { periodMonth: "asc" } });
   const isCurrent = (d: Date) => d.getTime() === monthStart(today).getTime();
 
-  const pastPaid = await db.student.create({ data: { fullName: "Victor Omondi", phone: "+254722100012", monthlyRent: 10000, rentDueDay: 5, status: "PENDING" } });
-  await checkInStudent({ studentId: pastPaid.id, bedId: bed["R2B3"]!, startDate: m(-6, 1), monthlyRent: 10000, rentDueDay: 5 }, owner.id);
-  const pastOwing = await db.student.create({ data: { fullName: "George Achieng", phone: "+254722100013", monthlyRent: 9500, rentDueDay: 5, status: "PENDING" } });
-  await checkInStudent({ studentId: pastOwing.id, bedId: bed["R3B3"]!, startDate: m(-5, 1), monthlyRent: 9500, rentDueDay: 5 }, owner.id);
+  const pastPaid = await db.student.create({ data: { fullName: "Victor Omondi", phone: "+254722100012", monthlyRent: 18000, rentDueDay: 5, status: "PENDING" } });
+  await checkInStudent({ studentId: pastPaid.id, bedId: bed["R2B3"]!, startDate: m(-6, 1), monthlyRent: 18000, rentDueDay: 5 }, owner.id);
+  const pastOwing = await db.student.create({ data: { fullName: "George Achieng", phone: "+254722100013", monthlyRent: 18000, rentDueDay: 5, status: "PENDING" } });
+  await checkInStudent({ studentId: pastOwing.id, bedId: bed["R3B3"]!, startDate: m(-5, 1), monthlyRent: 18000, rentDueDay: 5 }, owner.id);
   // Past residents: Victor paid in full then left; George left owing his last month.
   for (const inv of await invoicesOf(pastPaid.id)) if (inv.periodMonth.getTime() <= m(-3, 1).getTime()) await payInvoice(inv.id, toNumber(inv.amountDue));
   await checkOutStudent({ studentId: pastPaid.id, moveOutDate: m(-3, 28), notes: "Moved closer to campus." }, manager.id);
@@ -146,15 +147,15 @@ async function main() {
   step("students & check-ins");
   type P = { name: string; phone: string; bed: string; start: Date; rent: number; dueDay?: number; login?: boolean; notes?: string };
   const people: P[] = [
-    { name: "Brian Kamau", phone: "0722100001", bed: "R1B1", start: m(-5, 1), rent: 10000, login: true },
-    { name: "Kevin Ochieng", phone: "0722100002", bed: "R1B2", start: m(-4, 1), rent: 10000, login: true },
-    { name: "Samuel Kiprono", phone: "0722100003", bed: "R1B3", start: m(-3, 3), rent: 10000, login: true },
-    { name: "Dennis Mutua", phone: "0722100004", bed: "R2B1", start: m(-3, 10), rent: 9500, dueDay: 25, login: true, notes: "Prefers lower bunk." },
-    { name: "Felix Njoroge", phone: "0722100005", bed: "R2B2", start: m(-2, 1), rent: 10000, login: true },
-    { name: "Allan Wekesa", phone: "0722100006", bed: "R3B1", start: m(-1, 15), rent: 11000, dueDay: 28, login: true },
-    { name: "Ian Mwangi", phone: "0722100007", bed: "R2B3", start: m(-2, 5), rent: 10000, login: true },
-    { name: "Collins Otieno", phone: "0722100008", bed: "R3B2", start: m(0, 1), rent: 10500, login: true, notes: "Joined this month." },
-    { name: "Mark Kiplagat", phone: "0722100009", bed: "R1B4", start: m(-4, 1), rent: 10000, login: false, notes: "Suspended pending a disciplinary meeting." },
+    { name: "Brian Kamau", phone: "0722100001", bed: "R1B1", start: m(-5, 1), rent: 18000, login: true },
+    { name: "Kevin Ochieng", phone: "0722100002", bed: "R1B2", start: m(-4, 1), rent: 18000, login: true },
+    { name: "Samuel Kiprono", phone: "0722100003", bed: "R1B3", start: m(-3, 3), rent: 18000, login: true },
+    { name: "Dennis Mutua", phone: "0722100004", bed: "R2B1", start: m(-3, 10), rent: 18000, dueDay: 25, login: true, notes: "Prefers lower bunk." },
+    { name: "Felix Njoroge", phone: "0722100005", bed: "R2B2", start: m(-2, 1), rent: 18000, login: true },
+    { name: "Allan Wekesa", phone: "0722100006", bed: "R3B1", start: m(-1, 15), rent: 18000, dueDay: 28, login: true },
+    { name: "Ian Mwangi", phone: "0722100007", bed: "R2B3", start: m(-2, 5), rent: 18000, login: true },
+    { name: "Collins Otieno", phone: "0722100008", bed: "R3B2", start: m(0, 1), rent: 18000, login: true, notes: "Joined this month." },
+    { name: "Mark Kiplagat", phone: "0722100009", bed: "R1B4", start: m(-4, 1), rent: 18000, login: false, notes: "Suspended pending a disciplinary meeting." },
   ];
   const s: Record<string, { id: string; userId: string | null; name: string }> = {};
   let n = 0;
@@ -190,10 +191,10 @@ async function main() {
 
   // Applicants: one waiting, one with a reserved bed.
   await db.student.create({
-    data: { fullName: "Joseph Kariuki", phone: "+254722100010", email: "joseph.k@example.com", monthlyRent: 10000, rentDueDay: 5, status: "PENDING", notes: "Viewing next week." },
+    data: { fullName: "Joseph Kariuki", phone: "+254722100010", email: "joseph.k@example.com", monthlyRent: 18000, rentDueDay: 5, status: "PENDING", notes: "Viewing next week." },
   });
   const reservedFor = await db.student.create({
-    data: { fullName: "Eric Waweru", phone: "+254722100011", monthlyRent: 10000, rentDueDay: 5, status: "PENDING", notes: "Moving in on the 1st — Room 3 Bed 3 is reserved." },
+    data: { fullName: "Eric Waweru", phone: "+254722100011", monthlyRent: 18000, rentDueDay: 5, status: "PENDING", notes: "Moving in on the 1st — Room 3 Bed 3 is reserved." },
   });
   await db.bed.update({ where: { id: bed["R3B3"]! }, data: { status: "RESERVED", notes: `Reserved for ${reservedFor.fullName}` } });
   await db.bed.update({ where: { id: bed["R4B2"]! }, data: { status: "MAINTENANCE", notes: "Broken bed frame — awaiting repair" } });
@@ -202,7 +203,7 @@ async function main() {
   step("rent & payments");
   // Owner gave Brian a KES 1,000 discount on his first month (edited invoice, logged).
   const brianFirst = (await db.rentInvoice.findMany({ where: { studentId: s["Brian Kamau"]!.id }, orderBy: { periodMonth: "asc" }, take: 1 }))[0]!;
-  if (toNumber(brianFirst.amountPaid) === 0) await editInvoice(brianFirst.id, { amountDue: 9000, dueDate: brianFirst.dueDate, notes: "Welcome discount" }, owner.id);
+  if (toNumber(brianFirst.amountPaid) === 0) await editInvoice(brianFirst.id, { amountDue: 17000, dueDate: brianFirst.dueDate, notes: "Welcome discount" }, owner.id);
   // Current residents — a mix of every rent status.
   const plan: Record<string, "all" | "partial" | "unpaid-current" | "two-months-behind"> = {
     "Brian Kamau": "all",
@@ -271,11 +272,12 @@ async function main() {
   // ── Meals: 28 days back → 14 days ahead, records + attendance for past meals ──
   step("meals, meal records & attendance");
   const breakfasts = ["Tea, bread, eggs", "Tea, mandazi, sausages", "Porridge, bread, bananas", "Tea, chapati, eggs", "Cocoa, bread, boiled eggs", "Tea, sweet potatoes, arrow roots", "Uji, bread, peanut butter"];
+  const lunches = ["Rice, beef stew, salad", "Chapati, beans, cabbage", "Ugali, chicken, sukuma wiki", "Pilau, kachumbari", "Matoke, beef, greens", "Spaghetti, mince, salad", "Rice, lentils, cabbage"];
   const dinners = ["Ugali, beef stew, sukuma wiki", "Rice, beans, cabbage", "Chapati, ndengu, kachumbari", "Pilau, kachumbari", "Ugali, fried fish, greens", "Githeri, avocado", "Rice, chicken stew, vegetables"];
   for (let d = -28; d <= 14; d++) {
     const date = addDays(today, d);
-    for (const type of ["BREAKFAST", "DINNER"] as MealType[]) {
-      const list = type === "BREAKFAST" ? breakfasts : dinners;
+    for (const type of mealsFor(date)) {
+      const list = type === "BREAKFAST" ? breakfasts : type === "LUNCH" ? lunches : dinners;
       const idx = (d + 28) % list.length;
       const meal = await db.meal.create({
         data: { date, type, menu: list[idx]!, notes: type === "DINNER" && idx === 6 ? "Sunday special" : null, createdById: manager.id },

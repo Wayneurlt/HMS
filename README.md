@@ -139,12 +139,22 @@ Permissions are defined in `src/lib/auth/permissions.ts` and enforced on the ser
 - **Overnight and meals:** students mark each night as *Staying* or *Away*. No answer counts as expected.
   - Dinner expects tonight's residents who aren't away.
   - Breakfast is based on the previous night.
+  - Meals: breakfast and dinner every day, plus lunch on Saturdays and Sundays (same rule as breakfast). Lunch can't be added on a weekday.
+- **Rent:** the standard rent is KES 18,000 a month (Settings → default monthly rent); each student's rent can differ.
 - **Kitchen:** purchases increase stock (total = quantity × unit cost). Consumption, waste and adjustments decrease it, and stock can never go negative. Low/out-of-stock status is automatic and raises a notification. Cost per meal = food cost ÷ meals served.
 - **Audit log:** logins, check-ins/outs, payments, rent edits, stock changes, purchases, expenses, approvals, user changes and settings changes are all recorded.
 
 See `docs/ARCHITECTURE.md` for the code layout and conventions.
 
-## 11. Security notes
+## 11. Installing as an app (PWA)
+
+Masqani is a Progressive Web App:
+- **Install:** Android, Chrome, Edge and desktop browsers offer a one-tap install. On iPhone and iPad, use Safari's **Share → Add to Home Screen**.
+- **Prompt:** every visit in a browser shows an install prompt, and an "Install app" button stays on screen until the app is installed.
+- **Offline:** the service worker (`public/sw.js`) caches only app files, icons and an offline page. Pages and data are never cached, because they're personal. Without a connection, the app shows an offline screen.
+- **Requirements:** installing needs HTTPS in production (Vercel provides it). Icons are in `public/icons/` and the manifest is `src/app/manifest.ts`.
+
+## 12. Security notes
 
 - Passwords are hashed with bcrypt (cost 12). Sessions are random tokens stored as HMAC hashes, in `httpOnly`, `SameSite=Lax` cookies (`Secure` in production).
 - Login is rate-limited per account and per IP. Sensitive actions are rate-limited per user.

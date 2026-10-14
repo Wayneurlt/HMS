@@ -11,6 +11,7 @@ export type SettingsValues = {
   defaultRentDueDay: number;
   prorateFirstMonth: boolean;
   breakfastTime: string;
+  lunchTime: string;
   dinnerTime: string;
 };
 
@@ -44,9 +45,13 @@ export function SettingsForm({ initial }: { initial: SettingsValues }) {
       </Field>
 
       <h3 className="pt-2 text-xs font-medium uppercase tracking-wide text-ink-3">Meal times</h3>
-      <FormGrid>
+      <p className="-mt-2 text-xs text-ink-3">Breakfast and dinner every day; lunch on Saturdays and Sundays.</p>
+      <FormGrid cols={3}>
         <Field label="Breakfast" name="breakfastTime" required>
           <Input name="breakfastTime" type="time" defaultValue={initial.breakfastTime} />
+        </Field>
+        <Field label="Lunch (weekends)" name="lunchTime" required>
+          <Input name="lunchTime" type="time" defaultValue={initial.lunchTime} />
         </Field>
         <Field label="Dinner" name="dinnerTime" required>
           <Input name="dinnerTime" type="time" defaultValue={initial.dinnerTime} />

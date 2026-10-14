@@ -8,6 +8,7 @@ import { can } from "@/lib/auth/permissions";
 import { formatDayLong, formatMonth, monthStart, today } from "@/lib/dates";
 import { formatMoney, formatNumber, round2, toNumber } from "@/lib/format";
 import { mealExpectation } from "@/lib/services/attendance";
+import { MEAL_LABEL, MEAL_ORDER, isWeekend, mealsFor } from "@/lib/meals";
 import { stockAlerts } from "@/lib/services/inventory";
 import { Badge, Card, EmptyState, LinkButton, PageHeader, StatCard } from "@/components/ui/primitives";
 import { StatusBadge } from "@/components/ui/status";
@@ -30,10 +31,11 @@ export default async function KitchenDashboardPage() {
   const t = today();
   const mStart = monthStart(t);
 
-  const [meals, breakfast, dinner, alerts, pending, pendingCount, approvedCount, todaysPurchases, todaysExpenses, mtdPurchases, mtdExpenses, mtdFood] =
+  const [meals, breakfast, lunch, dinner, alerts, pending, pendingCount, approvedCount, todaysPurchases, todaysExpenses, mtdPurchases, mtdExpenses, mtdFood] =
     await Promise.all([
       db.meal.findMany({ where: { date: t }, include: { record: true } }),
       canMeals ? mealExpectation(t, "BREAKFAST") : Promise.resolve(null),
+      canMeals && isWeekend(t) ? mealExpectation(t, "LUNCH") : Promise.resolve(null),
       canMeals ? mealExpectation(t, "DINNER") : Promise.resolve(null),
       stockAlerts(),
       db.shoppingRequest.findMany({
@@ -99,13 +101,16 @@ export default async function KitchenDashboardPage() {
 
       {/* Today's meals */}
       {canMeals && (
-        <div className="mb-5 grid gap-4 @2xl:grid-cols-2">
+        <div className={isWeekend(t) ? "mb-5 grid gap-4 @2xl:grid-cols-2 @5xl:grid-cols-3" : "mb-5 grid gap-4 @2xl:grid-cols-2"}>
           {(
             [
               ["BREAKFAST", "Breakfast", breakfast, <Coffee key="b" className="h-4 w-4" />],
+              ["LUNCH", "Lunch", lunch, <UtensilsCrossed key="l" className="h-4 w-4" />],
               ["DINNER", "Dinner", dinner, <Soup key="d" className="h-4 w-4" />],
             ] as const
-          ).map(([type, title, exp, icon]) => {
+          )
+            .filter(([type]) => mealsFor(t).includes(type))
+            .map(([type, title, exp, icon]) => {
             const meal = mealOf(type);
             return (
               <Link
@@ -266,10 +271,10 @@ export default async function KitchenDashboardPage() {
               ) : (
                 <ul className="space-y-2">
                   {recordedMeals
-                    .sort((a, b) => (a.type === "BREAKFAST" ? -1 : b.type === "BREAKFAST" ? 1 : 0))
+                    .sort((a, b) => MEAL_ORDER.indexOf(a.type) - MEAL_ORDER.indexOf(b.type))
                     .map((m) => (
                       <li key={m.id} className="flex justify-between gap-3 text-sm">
-                        <span className="text-ink">{m.type === "BREAKFAST" ? "Breakfast" : "Dinner"}</span>
+                        <span className="text-ink">{MEAL_LABEL[m.type]}</span>
                         <span className="tabular text-ink-2">
                           {m.record!.servedCount} served · {formatNumber(m.record!.leftoverPortions)} leftover
                         </span>

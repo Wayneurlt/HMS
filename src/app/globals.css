@@ -190,10 +190,13 @@ dialog::backdrop {
 
 /* ─────────────── Mobile navigation ─────────────── */
 
-/* Toasts sit above the bottom tab bar on pages that have one. */
+/* Toasts and the "Install app" button sit above the bottom tab bar on pages that have one. */
 @media (max-width: 1023px) {
   :root:has(.bottom-tabs) .toast-stack {
     bottom: 4.5rem;
+  }
+  :root:has(.bottom-tabs) .install-pill {
+    bottom: 4.75rem;
   }
 }
 

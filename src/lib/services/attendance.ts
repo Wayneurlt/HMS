@@ -10,7 +10,8 @@ import { addDays, toISODate } from "@/lib/dates";
  *  - Each resident answers per night: STAYING, AWAY, or no answer ("NOT_RESPONDED").
  *  - Dinner on day D expects residents of night D who are not AWAY.
  *  - Breakfast on day D expects residents of night D−1 who were not AWAY that night
- *    (and who are still residents on day D).
+ *    (and who are still residents on day D). Weekend lunch uses the same rule: someone
+ *    away the night before is assumed to be back only by the evening.
  *  - Not-responded residents ARE counted as expected (the hostel default is "here").
  */
 
@@ -145,7 +146,7 @@ export async function mealExpectation(date: Date, type: MealType, client: Tx | t
         .map(({ studentId, fullName, expectedReturnDate }) => ({ studentId, fullName, expectedReturnDate })),
     };
   }
-  // Breakfast: based on the previous night, limited to students still resident today.
+  // Breakfast (and weekend lunch): based on the previous night, limited to students still resident today.
   const [prev, todayNight] = await nightSummaries(addDays(date, -1), date, client);
   const residentToday = new Set(todayNight!.students.map((s) => s.studentId));
   const pool = prev!.students.filter((s) => residentToday.has(s.studentId));

@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import { cookies } from "next/headers";
 import { APP_NAME } from "@/lib/brand";
 import { ToastProvider } from "@/components/ui/toast";
+import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { parseTheme, THEME_COOKIE } from "@/lib/preferences";
 import "./globals.css";
 
@@ -20,6 +21,13 @@ export const metadata: Metadata = {
   title: { default: APP_NAME, template: `%s · ${APP_NAME}` },
   description: "Hostel operations: residents, rent, meals and kitchen.",
   robots: { index: false, follow: false },
+  applicationName: APP_NAME,
+  // Installed-app behaviour on iPhone/iPad (Add to Home Screen).
+  appleWebApp: { capable: true, title: APP_NAME, statusBarStyle: "default" },
+  icons: {
+    icon: [{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
+  },
 };
 
 export const viewport: Viewport = {
@@ -39,7 +47,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en" className={inter.variable} data-theme={theme} suppressHydrationWarning>
       <body className="font-sans">
-        <ToastProvider>{children}</ToastProvider>
+        <ToastProvider>
+          {children}
+          <InstallPrompt />
+        </ToastProvider>
       </body>
     </html>
   );

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { defineAction } from "@/lib/action";
+import { MEAL_LABEL } from "@/lib/meals";
 import { ActionError } from "@/lib/auth/guards";
 import { ACTIONS, logActivity } from "@/lib/services/activity";
 import { mealExpectation } from "@/lib/services/attendance";
@@ -60,7 +61,7 @@ export const recordMeal = defineAction({ permission: "meals.record", schema: rec
   }
   const served = input.servedCount ?? present.size;
   const leftovers = round2(input.leftoverPortions);
-  const label = meal.type === "BREAKFAST" ? "Breakfast" : "Dinner";
+  const label = MEAL_LABEL[meal.type];
 
   await db.$transaction(
     async (tx) => {

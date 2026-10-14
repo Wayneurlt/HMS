@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Coffee, History, Pencil, Soup } from "lucide-react";
+import { ChevronLeft, ChevronRight, Coffee, History, Pencil, Soup, UtensilsCrossed } from "lucide-react";
 import type { MealType } from "@prisma/client";
 import { db } from "@/lib/db";
 import { requirePermission } from "@/lib/auth/guards";
@@ -7,14 +7,13 @@ import { mealExpectation, type MealExpectation } from "@/lib/services/attendance
 import { addDays, formatDayLong, formatDayShort, formatDateTime, parseDateOnly, toISODate, today } from "@/lib/dates";
 import { formatNumber, toNumber } from "@/lib/format";
 import { sp } from "@/lib/utils";
+import { MEAL_LABEL, mealsFor } from "@/lib/meals";
 import { Dialog } from "@/components/ui/dialog";
 import { Badge, Callout, Card, DetailList, LinkButton, PageHeader } from "@/components/ui/primitives";
 import { MealForm } from "@/app/(app)/meals/meal-form";
 import { RecordMealForm, type ChecklistStudent } from "./record-meal-form";
 
 export const metadata = { title: "Today's meals" };
-
-const TYPES: MealType[] = ["BREAKFAST", "DINNER"];
 
 function parseDateParam(v: string | undefined): Date | null {
   if (!v) return null;
@@ -39,6 +38,7 @@ export default async function KitchenTodayPage({
   const iso = toISODate(date);
   const isToday = date.getTime() === now.getTime();
   const isFuture = date.getTime() > now.getTime();
+  const TYPES = mealsFor(date); // breakfast & dinner; plus lunch at weekends
 
   const [meals, expectations] = await Promise.all([
     db.meal.findMany({
@@ -91,7 +91,7 @@ export default async function KitchenTodayPage({
         }
       />
 
-      <div className="grid gap-5 @6xl:grid-cols-2">
+      <div className={TYPES.length === 3 ? "grid gap-5 @6xl:grid-cols-3" : "grid gap-5 @6xl:grid-cols-2"}>
         {TYPES.map((t, i) => {
           const meal = meals.find((m) => m.type === t);
           const exp = expectations[i]!;
@@ -153,8 +153,8 @@ function MealCard({
   canManageMeals: boolean;
   isFuture: boolean;
 }) {
-  const title = type === "BREAKFAST" ? "Breakfast" : "Dinner";
-  const Icon = type === "BREAKFAST" ? Coffee : Soup;
+  const title = MEAL_LABEL[type];
+  const Icon = type === "BREAKFAST" ? Coffee : type === "LUNCH" ? UtensilsCrossed : Soup;
   const record = meal?.record ?? null;
   const attendance: Record<string, boolean> = Object.fromEntries((meal?.attendances ?? []).map((a) => [a.studentId, a.attended]));
   const attendedCount = meal?.attendances.filter((a) => a.attended).length ?? 0;

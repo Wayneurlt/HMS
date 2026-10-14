@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ClipboardList, Pencil } from "lucide-react";
 import { db } from "@/lib/db";
 import { requirePermission } from "@/lib/auth/guards";
+import { MEAL_LABEL } from "@/lib/meals";
 import { addDays, diffDays, formatDate, formatDayShort, parseDateOnly, toISODate, today } from "@/lib/dates";
 import { formatNumber, round2, toNumber } from "@/lib/format";
 import { sp } from "@/lib/utils";
@@ -126,14 +127,14 @@ export default async function MealRecordsPage({
           <EmptyState
             icon={<ClipboardList className="h-5 w-5" />}
             title="No meals recorded in this period"
-            description="Record served counts from Today's Meals after each breakfast and dinner."
+            description="Record served counts from Today's Meals after each meal (breakfast, dinner, and lunch at weekends)."
           />
         </Card>
       ) : (
         <>
           <Card
             title="Served vs expected"
-            subtitle="Per day, breakfast and dinner combined"
+            subtitle="Per day, all meals combined"
             action={
               <Legend
                 series={[
@@ -175,7 +176,7 @@ export default async function MealRecordsPage({
                   <tr key={r.id}>
                     <TD className="whitespace-nowrap">{formatDayShort(r.date)}</TD>
                     <TD>
-                      <Badge tone={r.type === "BREAKFAST" ? "info" : "accent"}>{r.type === "BREAKFAST" ? "Breakfast" : "Dinner"}</Badge>
+                      <Badge tone={r.type === "BREAKFAST" ? "info" : r.type === "LUNCH" ? "warn" : "accent"}>{MEAL_LABEL[r.type]}</Badge>
                     </TD>
                     <TD className="max-w-60 truncate text-ink-2">
                       <span title={r.menu}>{r.menu}</span>

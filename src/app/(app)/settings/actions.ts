@@ -23,6 +23,7 @@ const settingsSchema = z.object({
   defaultRentDueDay: zInt(1, 28, "Rent due day"),
   prorateFirstMonth: zCheckbox(),
   breakfastTime: zTime("Breakfast time"),
+  lunchTime: zTime("Weekend lunch time"),
   dinnerTime: zTime("Dinner time"),
 });
 
@@ -39,6 +40,7 @@ export const updateSettings = defineAction(
         defaultRentDueDay: before.defaultRentDueDay,
         prorateFirstMonth: before.prorateFirstMonth,
         breakfastTime: before.breakfastTime,
+        lunchTime: before.lunchTime,
         dinnerTime: before.dinnerTime,
       };
       const next: Record<string, unknown> = { ...input };

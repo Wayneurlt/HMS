@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Sunrise, Sunset, UtensilsCrossed } from "lucide-react";
+import { ChevronLeft, ChevronRight, Sun, Sunrise, Sunset, UtensilsCrossed } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireStudentSelf } from "@/lib/auth/guards";
 import { addDays, formatDate, formatDayShort, toISODate, today } from "@/lib/dates";
 import { getSettings } from "@/lib/services/settings";
 import { Badge, Callout, Card, FilterTabs, LinkButton, PageHeader } from "@/components/ui/primitives";
 import { cn } from "@/lib/utils";
+import { isWeekend } from "@/lib/meals";
 
 export const metadata = { title: "Meals" };
 
@@ -50,6 +51,7 @@ export default async function MyMealsPage({ searchParams }: { searchParams: Prom
       isToday: iso === toISODate(t),
       isPast: d.getTime() < t.getTime(),
       breakfast: mealMap.get(`${iso}|BREAKFAST`),
+      lunch: isWeekend(d) ? (mealMap.get(`${iso}|LUNCH`) ?? null) : undefined,
       dinner: mealMap.get(`${iso}|DINNER`),
       noBreakfast: awayNights.has(toISODate(addDays(d, -1))),
       noDinner: awayNights.has(iso),
@@ -62,7 +64,7 @@ export default async function MyMealsPage({ searchParams }: { searchParams: Prom
     <div>
       <PageHeader
         title="Meal timetable"
-        description={`Breakfast at ${settings.breakfastTime} · Dinner at ${settings.dinnerTime}`}
+        description={`Breakfast ${settings.breakfastTime} · Lunch ${settings.lunchTime} (weekends) · Dinner ${settings.dinnerTime}`}
         actions={
           <div className="flex items-center gap-1">
             {offset > MIN_OFFSET ? (
@@ -92,13 +94,13 @@ export default async function MyMealsPage({ searchParams }: { searchParams: Prom
 
       <div className="mb-5">
         <Callout tone="info" title="Going to be away?">
-          If you mark a night as away, the kitchen will not prepare dinner for you that evening or breakfast the next morning.
+          If you mark a night as away, the kitchen will not prepare dinner for you that evening, or breakfast (and weekend lunch) the next day.
           Update your answers on <Link href="/me/overnight" className="underline underline-offset-2">My overnight status</Link>.
         </Callout>
       </div>
 
       <Card title={weekLabel} subtitle={`${formatDate(start)} – ${formatDate(end)}`}>
-        <div className="grid grid-cols-1 gap-3 @xl:grid-cols-2 @4xl:grid-cols-4 @6xl:grid-cols-7">
+        <div className="grid grid-cols-1 gap-3 @xl:grid-cols-2 @4xl:grid-cols-4 @[110rem]:grid-cols-7">
           {days.map((d) => (
             <div
               key={d.iso}
@@ -113,6 +115,12 @@ export default async function MyMealsPage({ searchParams }: { searchParams: Prom
                 {d.isToday && <Badge tone="accent">Today</Badge>}
               </div>
               <MealSlot icon={<Sunrise className="h-3.5 w-3.5" />} label="Breakfast" meal={d.breakfast} away={d.noBreakfast} />
+              {d.lunch !== undefined && (
+                <>
+                  <div className="my-2.5 border-t border-line/70" />
+                  <MealSlot icon={<Sun className="h-3.5 w-3.5" />} label="Lunch" meal={d.lunch ?? undefined} away={d.noBreakfast} />
+                </>
+              )}
               <div className="my-2.5 border-t border-line/70" />
               <MealSlot icon={<Sunset className="h-3.5 w-3.5" />} label="Dinner" meal={d.dinner} away={d.noDinner} />
             </div>

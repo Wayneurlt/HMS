@@ -45,14 +45,14 @@ export function SignInScreen({ info, user }: { info: PublicInfo | null; user: Se
             Student accommodation, <span className="text-accent-hi">managed properly.</span>
           </h1>
           <p className="mt-4 max-w-lg text-sm leading-relaxed text-ink-2 sm:text-base">
-            A small hostel for male students: a bed of your own, breakfast and dinner every day, and simple monthly rent.
+            A small hostel for male students: a bed of your own, breakfast and dinner every day plus lunch at weekends, and simple monthly rent.
           </p>
 
           {info && (
             <dl className="mt-8 grid max-w-xl grid-cols-3 gap-2 sm:gap-3">
               <Fact icon={<Wallet className="h-4 w-4" />} label="Rent / month" value={formatMoney(info.rent)} />
               <Fact icon={<BedDouble className="h-4 w-4" />} label="Beds free" value={hasRooms ? String(info.availableBeds) : "Ask us"} />
-              <Fact icon={<Soup className="h-4 w-4" />} label="Meals" value="2 a day" />
+              <Fact icon={<Soup className="h-4 w-4" />} label="Meals" value="2–3 a day" />
             </dl>
           )}
         </div>
@@ -60,7 +60,7 @@ export function SignInScreen({ info, user }: { info: PublicInfo | null; user: Se
         {info && (
           <div className="relative mt-8 flex flex-col gap-3 text-sm text-ink-2 lg:mt-auto lg:pt-10">
             <p className="flex items-center gap-2">
-              <Clock className="h-4 w-4 shrink-0" /> Breakfast {info.breakfastTime} · Dinner {info.dinnerTime}
+              <Clock className="h-4 w-4 shrink-0" /> Breakfast {info.breakfastTime} · Dinner {info.dinnerTime} · Weekend lunch {info.lunchTime}
             </p>
             {info.address && (
               <p className="flex items-center gap-2">

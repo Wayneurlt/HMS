@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { addMonths, formatMonth, monthEnd, monthStart, monthsBetween, toISODate, today as todayFn } from "@/lib/dates";
 import { round2, toNumber } from "@/lib/format";
 import { mealExpectation, nightSummary } from "./attendance";
+import { isWeekend } from "@/lib/meals";
 import { stockAlerts } from "./inventory";
 import { rentTotals } from "./rent";
 
@@ -63,6 +64,9 @@ export async function getDashboardData(opts: { range: DashboardRange; includeFin
         },
       }),
     ]);
+
+  // Lunch is only served at weekends.
+  const lunch = isWeekend(today) ? await mealExpectation(today, "LUNCH") : null;
 
   const bedCount = (s: string) => beds.find((b) => b.status === s)?._count._all ?? 0;
   const totalBeds = beds.reduce((a, b) => a + b._count._all, 0);
@@ -130,6 +134,7 @@ export async function getDashboardData(opts: { range: DashboardRange; includeFin
     },
     tonight,
     breakfast,
+    lunch,
     dinner,
     alerts,
     pendingRequests,

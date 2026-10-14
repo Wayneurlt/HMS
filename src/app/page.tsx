@@ -10,7 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const name = APP_NAME;
   return {
     title: { absolute: `${name} · Student accommodation` },
-    description: `${name}: student accommodation for male students, with breakfast and dinner every day and simple monthly rent.`,
+    description: `${name}: student accommodation for male students, with breakfast and dinner every day, lunch at weekends and simple monthly rent.`,
     robots: { index: true, follow: true },
   };
 }

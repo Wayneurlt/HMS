@@ -5,7 +5,7 @@ import { NextResponse, type NextRequest } from "next/server";
  * Real authentication and authorization happen server-side in every page/action
  * (src/lib/auth/guards.ts) — the cookie's presence is never trusted on its own.
  */
-const PUBLIC = ["/login", "/setup", "/api/cron", "/api/health"];
+const PUBLIC = ["/login", "/setup", "/api/cron", "/api/health", "/offline"];
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -23,5 +23,6 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.svg|robots.txt).*)"],
+  // Static app files (PWA manifest, service worker, icons) never need a session.
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.svg|robots.txt|manifest.webmanifest|sw.js|icons/).*)"],
 };

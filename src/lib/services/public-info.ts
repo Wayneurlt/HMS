@@ -12,6 +12,7 @@ export type PublicInfo = {
   email: string | null;
   rent: number;
   breakfastTime: string;
+  lunchTime: string;
   dinnerTime: string;
   totalBeds: number;
   availableBeds: number;
@@ -36,6 +37,7 @@ export async function getPublicInfo(): Promise<PublicInfo | null> {
       email: settings.email,
       rent: toNumber(settings.defaultMonthlyRent),
       breakfastTime: settings.breakfastTime,
+      lunchTime: settings.lunchTime,
       dinnerTime: settings.dinnerTime,
       totalBeds: beds.reduce((a, b) => a + b._count._all, 0),
       availableBeds: beds.find((b) => b.status === "AVAILABLE")?._count._all ?? 0,

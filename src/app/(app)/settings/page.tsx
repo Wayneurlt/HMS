@@ -30,6 +30,7 @@ export default async function SettingsPage() {
               defaultRentDueDay: s.defaultRentDueDay,
               prorateFirstMonth: s.prorateFirstMonth,
               breakfastTime: s.breakfastTime,
+              lunchTime: s.lunchTime,
               dinnerTime: s.dinnerTime,
             }}
           />

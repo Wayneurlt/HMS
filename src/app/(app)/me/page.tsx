@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { BedDouble, Bell, ChevronRight, Megaphone, Moon, Sunrise, Sunset, UtensilsCrossed, Wallet } from "lucide-react";
+import { BedDouble, Bell, ChevronRight, Megaphone, Moon, Sun, Sunrise, Sunset, UtensilsCrossed, Wallet } from "lucide-react";
+import { isWeekend } from "@/lib/meals";
 import { db } from "@/lib/db";
 import { requireStudentSelf } from "@/lib/auth/guards";
 import { formatDate, formatDayLong, formatMonth, HOSTEL_TZ, monthStart, toISODate, today } from "@/lib/dates";
@@ -49,6 +50,7 @@ export default async function StudentDashboard() {
   const invStatus = inv ? computeRentStatus(due, paid, inv.dueDate, t) : null;
   const tonightStatus = tonight?.status ?? "NOT_RESPONDED";
   const breakfast = meals.find((m) => m.type === "BREAKFAST");
+  const lunch = meals.find((m) => m.type === "LUNCH");
   const dinner = meals.find((m) => m.type === "DINNER");
   const firstName = student.fullName.split(/\s+/)[0] ?? student.fullName;
 
@@ -167,6 +169,7 @@ export default async function StudentDashboard() {
           <div className="space-y-3">
             {[
               { label: "Breakfast", time: settings.breakfastTime, meal: breakfast, icon: <Sunrise className="h-4 w-4" /> },
+              ...(isWeekend(t) ? [{ label: "Lunch", time: settings.lunchTime, meal: lunch, icon: <Sun className="h-4 w-4" /> }] : []),
               { label: "Dinner", time: settings.dinnerTime, meal: dinner, icon: <Sunset className="h-4 w-4" /> },
             ].map((m) => (
               <div key={m.label} className="rounded-xl border border-line bg-card-2/40 p-3">

@@ -12,6 +12,7 @@ import {
   Package,
   Plus,
   Soup,
+  UtensilsCrossed,
   UserCheck,
   Users,
   UserX,
@@ -275,9 +276,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
               </span>
               <span className="tabular text-ink-2">{tonightPct}%</span>
             </div>
-            <div className="mt-4 grid grid-cols-3 gap-2">
+            <div className={d.lunch ? "mt-4 grid grid-cols-2 gap-2" : "mt-4 grid grid-cols-3 gap-2"}>
               <MiniStat icon={<Moon className="h-3.5 w-3.5" />} label="Away" value={d.tonight.away} />
               <MiniStat icon={<Coffee className="h-3.5 w-3.5" />} label="Breakfast" value={d.breakfast.expected} />
+              {d.lunch && <MiniStat icon={<UtensilsCrossed className="h-3.5 w-3.5" />} label="Lunch" value={d.lunch.expected} />}
               <MiniStat icon={<Soup className="h-3.5 w-3.5" />} label="Dinner" value={d.dinner.expected} />
             </div>
             {d.tonight.notResponded > 0 && (

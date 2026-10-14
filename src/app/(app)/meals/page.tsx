@@ -1,20 +1,17 @@
 import { ChevronLeft, ChevronRight, Copy, Pencil, Plus, Trash2, Utensils } from "lucide-react";
-import type { MealType } from "@prisma/client";
 import { db } from "@/lib/db";
 import { requirePermission } from "@/lib/auth/guards";
 import { mealExpectation } from "@/lib/services/attendance";
 import { addDays, formatDate, formatDayShort, parseDateOnly, toISODate, today } from "@/lib/dates";
 import { formatNumber, toNumber } from "@/lib/format";
 import { cn, sp } from "@/lib/utils";
+import { MEAL_LABEL as TYPE_LABEL, mealsFor } from "@/lib/meals";
 import { ConfirmAction, Dialog } from "@/components/ui/dialog";
 import { Badge, Callout, LinkButton, PageHeader } from "@/components/ui/primitives";
 import { copyPreviousWeek, deleteMeal } from "./actions";
 import { MealForm } from "./meal-form";
 
 export const metadata = { title: "Meal timetable" };
-
-const TYPES: MealType[] = ["BREAKFAST", "DINNER"];
-const TYPE_LABEL: Record<MealType, string> = { BREAKFAST: "Breakfast", DINNER: "Dinner" };
 
 function parseDateParam(v: string | undefined): Date | null {
   if (!v) return null;
@@ -45,18 +42,19 @@ export default async function MealsPage({
       where: { date: { gte: start, lte: end } },
       include: { record: true },
     }),
-    Promise.all(days.flatMap((d) => TYPES.map((t) => mealExpectation(d, t)))),
+    Promise.all(days.flatMap((d) => mealsFor(d).map((t) => mealExpectation(d, t)))),
   ]);
   const mealMap = new Map(meals.map((m) => [`${toISODate(m.date)}|${m.type}`, m]));
   const expMap = new Map(expectations.map((e) => [`${toISODate(e.date)}|${e.type}`, e]));
   const weekHref = (d: Date) => `/meals?week=${toISODate(d)}`;
   const planned = meals.length;
+  const totalSlots = days.reduce((n, d) => n + mealsFor(d).length, 0);
 
   return (
     <div className="space-y-5">
       <PageHeader
         title="Meal timetable"
-        description={`Week of ${formatDate(start)} – ${formatDate(end)} · ${planned} of 14 meals planned`}
+        description={`Week of ${formatDate(start)} – ${formatDate(end)} · ${planned} of ${totalSlots} meals planned · lunch on weekends`}
         actions={
           <>
             <LinkButton href={weekHref(addDays(start, -7))} variant="secondary" size="icon" aria-label="Previous week">
@@ -115,7 +113,7 @@ export default async function MealsPage({
                 {isToday && <Badge tone="accent">Today</Badge>}
               </header>
               <div className="flex flex-1 flex-col gap-2">
-                {TYPES.map((t) => {
+                {mealsFor(d).map((t) => {
                   const meal = mealMap.get(`${iso}|${t}`);
                   const exp = expMap.get(`${iso}|${t}`)!;
                   return (

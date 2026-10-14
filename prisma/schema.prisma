@@ -76,8 +76,10 @@ enum OvernightState {
   AWAY
 }
 
+/// Breakfast and dinner every day; lunch on Saturdays and Sundays only.
 enum MealType {
   BREAKFAST
+  LUNCH
   DINNER
 }
 
@@ -668,10 +670,11 @@ model HostelSettings {
   address            String?
   phone              String?
   email              String?
-  defaultMonthlyRent Decimal  @default(10000) @db.Decimal(12, 2)
+  defaultMonthlyRent Decimal  @default(18000) @db.Decimal(12, 2)
   defaultRentDueDay  Int      @default(5)
   prorateFirstMonth  Boolean  @default(false)
   breakfastTime      String   @default("07:00")
+  lunchTime          String   @default("13:00")
   dinnerTime         String   @default("19:00")
   updatedAt          DateTime @updatedAt
 }

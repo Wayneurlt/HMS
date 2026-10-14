@@ -9,6 +9,7 @@ import { ActionError } from "@/lib/auth/guards";
 import { ACTIONS, logActivity } from "@/lib/services/activity";
 import { addDays, formatDate, formatDayShort, toISODate } from "@/lib/dates";
 import { zDate, zId, zOptText, zText } from "@/lib/validation/common";
+import { MEAL_LABEL, isMealServedOn } from "@/lib/meals";
 
 function revalidateMeals() {
   for (const p of ["/meals", "/kitchen", "/kitchen/today", "/kitchen/records", "/dashboard", "/me", "/me/meals"]) {
@@ -16,7 +17,7 @@ function revalidateMeals() {
   }
 }
 
-const mealLabel = (type: "BREAKFAST" | "DINNER") => (type === "BREAKFAST" ? "Breakfast" : "Dinner");
+const mealLabel = (type: keyof typeof MEAL_LABEL) => MEAL_LABEL[type];
 
 /** Monday of the week containing d (date-only). */
 function weekStart(d: Date): Date {
@@ -26,9 +27,12 @@ function weekStart(d: Date): Date {
 const mealSchema = z.object({
   id: z.preprocess((v) => (v === "" ? undefined : v), zId().optional()),
   date: zDate("Date"),
-  type: z.enum(["BREAKFAST", "DINNER"], { error: "Choose breakfast or dinner" }),
+  type: z.enum(["BREAKFAST", "LUNCH", "DINNER"], { error: "Choose breakfast, lunch or dinner" }),
   menu: zText(500, "Menu"),
   notes: zOptText(500),
+}).refine((v) => isMealServedOn(v.type, v.date), {
+  path: ["type"],
+  message: "Lunch is only served on Saturdays and Sundays",
 });
 
 /** Create a meal, or update it when `id` is given. (date, type) is unique. */
