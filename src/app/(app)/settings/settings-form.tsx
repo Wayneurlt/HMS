@@ -44,8 +44,10 @@ export function SettingsForm({ initial }: { initial: SettingsValues }) {
         <Checkbox name="prorateFirstMonth" label="Prorate the first month's rent" defaultChecked={initial.prorateFirstMonth} />
       </Field>
 
-      <h3 className="pt-2 text-xs font-medium uppercase tracking-wide text-ink-3">Meal times</h3>
-      <p className="-mt-2 text-xs text-ink-3">Breakfast and dinner every day; lunch on Saturdays and Sundays.</p>
+      <div className="space-y-1.5 pt-2">
+        <h3 className="text-xs font-medium uppercase tracking-wide text-ink-3">Meal times</h3>
+        <p className="text-xs text-ink-3">Breakfast and dinner every day; lunch on Saturdays and Sundays.</p>
+      </div>
       <FormGrid cols={3}>
         <Field label="Breakfast" name="breakfastTime" required>
           <Input name="breakfastTime" type="time" defaultValue={initial.breakfastTime} />

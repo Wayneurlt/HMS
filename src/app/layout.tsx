@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { APP_NAME } from "@/lib/brand";
 import { ToastProvider } from "@/components/ui/toast";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
+import { SPLASH_BOOT_SCRIPT, SplashScreen } from "@/components/splash/splash-screen";
 import { parseTheme, THEME_COOKIE } from "@/lib/preferences";
 import "./globals.css";
 
@@ -46,7 +47,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const theme = parseTheme((await cookies()).get(THEME_COOKIE)?.value) ?? "light";
   return (
     <html lang="en" className={inter.variable} data-theme={theme} suppressHydrationWarning>
+      <head>
+        {/* Decides before first paint whether the launch splash shows (once per session). */}
+        <script dangerouslySetInnerHTML={{ __html: SPLASH_BOOT_SCRIPT }} />
+      </head>
       <body className="font-sans">
+        <SplashScreen />
         <ToastProvider>
           {children}
           <InstallPrompt />

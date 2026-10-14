@@ -62,7 +62,7 @@ export function ActionForm<R = unknown>({
     <FormContext.Provider value={{ errors, pending }}>
       <form
         ref={ref}
-        className={cn("space-y-4", className)}
+        className={cn("space-y-5", className)}
         noValidate
         onSubmit={(e) => {
           e.preventDefault();
@@ -95,7 +95,8 @@ export function ActionForm<R = unknown>({
             {formError}
           </div>
         )}
-        <fieldset disabled={pending} className="contents">
+        {/* Real block (not display:contents) so the gap applies between every field and the buttons. */}
+        <fieldset disabled={pending} className="m-0 flex min-w-0 flex-col gap-5 border-0 p-0">
           {children}
         </fieldset>
       </form>
@@ -124,7 +125,7 @@ export function SubmitButton({
 }
 
 export function FormActions({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={cn("flex flex-wrap items-center justify-end gap-2 pt-2", className)}>{children}</div>;
+  return <div className={cn("flex flex-wrap items-center justify-end gap-3 pt-1", className)}>{children}</div>;
 }
 
 const controlClass =
@@ -151,18 +152,18 @@ export function Field({
   const { errors } = useFormErrors();
   const err = errors[name]?.[0];
   return (
-    <div className={cn("space-y-1.5", className)}>
-      <label htmlFor={name} className="block text-xs font-medium text-ink-2">
+    <div className={cn("flex min-w-0 flex-col gap-2", className)}>
+      <label htmlFor={name} className="block text-[13px] font-medium leading-none text-ink-2">
         {label}
         {required && <span className="text-bad"> *</span>}
       </label>
       {children}
       {err ? (
-        <p className="text-xs text-bad" role="alert">
+        <p className="text-xs leading-snug text-bad" role="alert">
           {err}
         </p>
       ) : hint ? (
-        <p className="text-xs text-ink-3">{hint}</p>
+        <p className="text-xs leading-snug text-ink-3">{hint}</p>
       ) : null}
     </div>
   );
@@ -175,7 +176,7 @@ export function Input({ className, name, ...props }: ComponentProps<"input"> & {
       id={props.id ?? name}
       name={name}
       aria-invalid={errors[name] ? true : undefined}
-      className={cn(controlClass, "h-10", className)}
+      className={cn(controlClass, "h-11", className)}
       {...props}
     />
   );
@@ -212,7 +213,7 @@ export function Select({
       id={props.id ?? name}
       name={name}
       aria-invalid={errors[name] ? true : undefined}
-      className={cn(controlClass, "h-10 appearance-none bg-[length:16px] bg-[right_0.75rem_center] bg-no-repeat pr-9", className)}
+      className={cn(controlClass, "h-11 appearance-none bg-[length:16px] bg-[right_0.75rem_center] bg-no-repeat pr-9", className)}
       style={{
         backgroundImage:
           "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23a3a3b0' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")",
@@ -247,7 +248,7 @@ export function Checkbox({ name, label, defaultChecked, value }: { name: string;
 /** Grid helper for forms. */
 export function FormGrid({ children, cols = 2 }: { children: ReactNode; cols?: 1 | 2 | 3 }) {
   return (
-    <div className={cn("grid grid-cols-1 gap-4", cols === 2 && "sm:grid-cols-2", cols === 3 && "sm:grid-cols-3")}>
+    <div className={cn("grid grid-cols-1 gap-x-4 gap-y-5", cols === 2 && "sm:grid-cols-2", cols === 3 && "sm:grid-cols-3")}>
       {children}
     </div>
   );

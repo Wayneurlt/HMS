@@ -188,6 +188,146 @@ dialog::backdrop {
   }
 }
 
+/* ─────────────── Launch splash ─────────────── */
+
+#splash {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  background: var(--color-page);
+  color: var(--color-accent-ink);
+  pointer-events: none;
+  transition:
+    opacity 0.4s ease,
+    visibility 0.4s;
+  /* Failsafe: fade out even if scripts never run. */
+  animation: splash-out 0.4s ease 4s forwards;
+}
+html[data-splash="done"] #splash {
+  opacity: 0;
+  visibility: hidden;
+}
+html[data-splash="off"] #splash {
+  display: none;
+}
+.splash-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  animation: splash-pop 0.5s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+.splash-disc {
+  fill: var(--color-accent);
+}
+.splash-mark {
+  filter: drop-shadow(0 8px 24px rgb(11 52 64 / 0.18));
+}
+.splash-ring,
+.splash-tick,
+.splash-m {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  /* Hidden until each stroke starts drawing; round caps would otherwise show as dots. */
+  opacity: 0;
+}
+.splash-ring {
+  animation: splash-draw 0.8s ease-out 0.15s forwards;
+}
+.splash-tick-1 {
+  animation: splash-draw 0.25s ease-out 0.8s forwards;
+}
+.splash-tick-2 {
+  animation: splash-draw 0.25s ease-out 0.9s forwards;
+}
+.splash-m {
+  animation: splash-draw 0.7s cubic-bezier(0.65, 0, 0.35, 1) 0.45s forwards;
+}
+.splash-word {
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--color-ink);
+  opacity: 0;
+  animation: splash-rise 0.5s ease-out 0.7s forwards;
+}
+.splash-bar {
+  width: 7rem;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--color-card-3);
+  opacity: 0;
+  animation: splash-rise 0.4s ease-out 0.9s forwards;
+}
+.splash-bar > span {
+  display: block;
+  width: 40%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-accent);
+  animation: splash-load 1s ease-in-out infinite;
+}
+@keyframes splash-draw {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes splash-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes splash-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes splash-load {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+@keyframes splash-out {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .splash-inner,
+  .splash-word,
+  .splash-bar,
+  .splash-bar > span,
+  .splash-ring,
+  .splash-tick,
+  .splash-m {
+    animation: none;
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+}
+
 /* ─────────────── Mobile navigation ─────────────── */
 
 /* Toasts and the "Install app" button sit above the bottom tab bar on pages that have one. */
